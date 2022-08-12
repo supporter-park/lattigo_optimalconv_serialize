@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/ldsec/lattigo/v2/ring"
+	"github.com/dwkim606/test_lattigo/ring"
 )
 
 // Bootstrapp re-encrypt a ciphertext at lvl Q0 to a ciphertext at MaxLevel-k where k is the depth of the bootstrapping circuit.

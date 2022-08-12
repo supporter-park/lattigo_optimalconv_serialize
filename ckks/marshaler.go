@@ -5,8 +5,8 @@ import (
 	"errors"
 	"math"
 
-	"github.com/ldsec/lattigo/v2/ring"
-	"github.com/ldsec/lattigo/v2/rlwe"
+	"github.com/dwkim606/test_lattigo/ring"
+	"github.com/ldwkim606/test_lattigo/rlwe"
 )
 
 // GetDataLen returns the length in bytes of the target Ciphertext.

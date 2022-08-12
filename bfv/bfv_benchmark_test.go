@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ldsec/lattigo/v2/rlwe"
+	"github.com/dwkim606/test_lattigo/rlwe"
 )
 
 func BenchmarkBFV(b *testing.B) {

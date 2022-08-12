@@ -1,9 +1,9 @@
 package ckks
 
 import (
-	"github.com/ldsec/lattigo/v2/ckks/bettersine"
-	"github.com/ldsec/lattigo/v2/rlwe"
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/ckks/bettersine"
+	"github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/dwkim606/test_lattigo/utils"
 	"math"
 	"math/cmplx"
 	"runtime"

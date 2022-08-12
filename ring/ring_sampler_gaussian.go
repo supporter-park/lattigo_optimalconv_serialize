@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 // GaussianSampler keeps the state of a truncated Gaussian polynomial sampler.

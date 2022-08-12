@@ -5,7 +5,7 @@ import (
 	"math/bits"
 	"unsafe"
 
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 func (r *Ring) minLevelTernary(p1, p2, p3 *Poly) int {

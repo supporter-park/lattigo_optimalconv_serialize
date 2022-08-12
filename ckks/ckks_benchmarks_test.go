@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ldsec/lattigo/v2/ring"
-	"github.com/ldsec/lattigo/v2/rlwe"
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/ring"
+	"github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 func BenchmarkCKKSScheme(b *testing.B) {

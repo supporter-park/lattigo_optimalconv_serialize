@@ -1,11 +1,12 @@
 package rlwe
 
 import (
-	"github.com/ldsec/lattigo/v2/ring"
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/ring"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 // Encryptor a generic RLWE encryption interface.
+
 type Encryptor interface {
 	// Encrypt encrypts the input plaintext and write the result on ctOut.
 	// The encryption algorithm depends on the implementor.

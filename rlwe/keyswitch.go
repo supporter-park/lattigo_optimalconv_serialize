@@ -1,8 +1,9 @@
 package rlwe
 
 import (
-	"github.com/ldsec/lattigo/v2/ring"
 	"math"
+
+	"github.com/dwkim606/test_lattigo/ring"
 )
 
 // KeySwitcher is a struct for RLWE key-switching.

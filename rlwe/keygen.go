@@ -3,8 +3,8 @@ package rlwe
 import (
 	"math/big"
 
-	"github.com/ldsec/lattigo/v2/ring"
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/ring"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 // KeyGenerator is an interface implementing the methods of the KeyGenerator.

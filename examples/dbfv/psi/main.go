@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ldsec/lattigo/v2/bfv"
-	"github.com/ldsec/lattigo/v2/dbfv"
-	"github.com/ldsec/lattigo/v2/drlwe"
-	"github.com/ldsec/lattigo/v2/ring"
-	"github.com/ldsec/lattigo/v2/rlwe"
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/bfv"
+	"github.com/dwkim606/test_lattigo/dbfv"
+	"github.com/dwkim606/test_lattigo/drlwe"
+	"github.com/dwkim606/test_lattigo/ring"
+	"github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 func check(err error) {

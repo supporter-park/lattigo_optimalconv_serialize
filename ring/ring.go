@@ -10,7 +10,7 @@ import (
 	"math/big"
 	"math/bits"
 
-	"github.com/ldsec/lattigo/v2/utils"
+	"github.com/dwkim606/test_lattigo/utils"
 )
 
 // Ring is a structure that keeps all the variables required to operate on a polynomial represented in this ring.

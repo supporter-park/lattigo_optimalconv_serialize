@@ -1,8 +1,8 @@
 package dckks
 
 import (
-	"github.com/ldsec/lattigo/v2/ckks"
-	"github.com/ldsec/lattigo/v2/drlwe"
+	"github.com/dwkim606/test_lattigo/ckks"
+	"github.com/dwkim606/test_lattigo/drlwe"
 )
 
 // CKSProtocol is a structure storing the parameters for the collective key-switching protocol.

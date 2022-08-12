@@ -1,8 +1,8 @@
 package bfv
 
 import (
-	"github.com/ldsec/lattigo/v2/ring"
-	"github.com/ldsec/lattigo/v2/rlwe"
+	"github.com/dwkim606/test_lattigo/ring"
+	"github.com/dwkim606/test_lattigo/rlwe"
 )
 
 // Encryptor an encryption interface for the BFV scheme.
