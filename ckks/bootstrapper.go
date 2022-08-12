@@ -5,7 +5,7 @@ import (
 	"math"
 	"math/cmplx"
 
-	"github.com/dwkim606/test_lattigo/bettersine"
+	"github.com/dwkim606/test_lattigo/ckks/bettersine"
 	"github.com/dwkim606/test_lattigo/rlwe"
 	"github.com/dwkim606/test_lattigo/utils"
 )
