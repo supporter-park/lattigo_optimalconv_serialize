@@ -155,7 +155,9 @@ func (btp *Bootstrapper) BootstrappConv_CtoS(ct *Ciphertext) (*Ciphertext, *Ciph
 	btp.evaluator.Rescale(ct0, btp.params.Scale(), ct0)
 
 	// CAN be removed if po2 input is used!!
-	btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
+	if ct1 != nil{
+		btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
+	}
 	// btp.evaluator.MultByConst(ct1, scale_StoC/math.Pow(2, pow), ct1)
 	btp.evaluator.Rescale(ct1, btp.params.Scale(), ct1)
 
