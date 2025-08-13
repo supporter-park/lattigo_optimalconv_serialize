@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 
 	"github.com/stretchr/testify/require"
 )

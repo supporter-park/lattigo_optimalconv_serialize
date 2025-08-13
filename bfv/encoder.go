@@ -6,8 +6,10 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/utils"
+	// "github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // GaloisGen is an integer of order N=2^d modulo M=2N and that spans Z_M with the integer -1.
@@ -22,20 +24,23 @@ const GaloisGen uint64 = 5
 // []uint64 --- Encoder.EncodeUintRingT(.) -┬-> PlaintextRingT -┬-> Encoder.ScaleUp(.) -----> Plaintext
 // []uint64 --- Encoder.EncodeIntRingT(.) --┘                   └-> Encoder.RingTToMul(.) ---> PlaintextMul
 //
-//
 // The different plaintext types have different efficiency-related caracteristics that we summarize in the Table below. For more information
 // about the different plaintext types, see plaintext.go.
 //
 // Relative efficiency of operation
-//  -----------------------------------------------------------------------
+//
+//	-----------------------------------------------------------------------
+//
 // |                      |  PlaintextRingT  |  Plaintext  | PlaintextMul  |
-//  -----------------------------------------------------------------------
+//
+//	-----------------------------------------------------------------------
+//
 // | Encoding/Decoding    |    Faster      |    Slower   |    Slower       |
 // | Memory size          |    Smaller     |    Larger   |    Larger       |
 // | Ct-Pt Add / Sub      |    Slower      |    Faster   |    N/A          |
 // | Ct-Pt Mul            |    Faster      |    Slower   |    Much Faster  |
-//  -----------------------------------------------------------------------
 //
+//	-----------------------------------------------------------------------
 type Encoder interface {
 	EncodeUint(coeffs []uint64, pt *Plaintext)
 	EncodeUintRingT(coeffs []uint64, pt *PlaintextRingT)

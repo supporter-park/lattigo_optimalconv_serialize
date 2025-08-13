@@ -4,7 +4,7 @@ import (
 	"math/bits"
 	"unsafe"
 
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // GenGaloisParams generates the generators for the Galois endomorphisms.

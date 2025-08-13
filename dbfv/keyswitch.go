@@ -1,8 +1,10 @@
 package dbfv
 
 import (
-	"github.com/dwkim606/test_lattigo/bfv"
-	"github.com/dwkim606/test_lattigo/drlwe"
+	// "github.com/dwkim606/test_lattigo/bfv"
+	// "github.com/dwkim606/test_lattigo/drlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/bfv"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/drlwe"
 )
 
 // CKSProtocol is a structure storing the parameters for the collective key-switching protocol.

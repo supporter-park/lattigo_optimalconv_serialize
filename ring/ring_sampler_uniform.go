@@ -3,7 +3,7 @@ package ring
 import (
 	"encoding/binary"
 
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // UniformSampler wraps a util.PRNG and represents the state of a sampler of uniform polynomials.

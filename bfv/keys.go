@@ -1,6 +1,7 @@
 package bfv
 
-import "github.com/dwkim606/test_lattigo/rlwe"
+// import "github.com/dwkim606/test_lattigo/rlwe"
+import "github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 
 // NewKeyGenerator creates a rlwe.KeyGenerator instance from the BFV parameters.
 func NewKeyGenerator(params Parameters) rlwe.KeyGenerator {

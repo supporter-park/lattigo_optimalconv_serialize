@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/bits"
 
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // Poly is the structure that contains the coefficients of a polynomial.

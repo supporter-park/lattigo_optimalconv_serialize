@@ -1,7 +1,8 @@
 package bfv
 
 import (
-	"github.com/dwkim606/test_lattigo/rlwe"
+	// "github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 )
 
 // Plaintext is a Element with only one Poly. It represents a Plaintext element in R_q that is the

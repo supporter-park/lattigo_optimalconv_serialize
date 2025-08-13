@@ -3,10 +3,14 @@ package dckks
 import (
 	"math/big"
 
-	"github.com/dwkim606/test_lattigo/ckks"
-	"github.com/dwkim606/test_lattigo/drlwe"
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
+	// "github.com/dwkim606/test_lattigo/ckks"
+	// "github.com/dwkim606/test_lattigo/drlwe"
+	// "github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ckks"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/drlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 )
 
 // E2SProtocol is the structure storing the parameters and temporary buffers

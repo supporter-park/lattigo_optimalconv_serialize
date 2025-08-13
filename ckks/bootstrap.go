@@ -5,7 +5,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
 )
 
 // Bootstrapp re-encrypt a ciphertext at lvl Q0 to a ciphertext at MaxLevel-k where k is the depth of the bootstrapping circuit.
@@ -155,7 +156,7 @@ func (btp *Bootstrapper) BootstrappConv_CtoS(ct *Ciphertext) (*Ciphertext, *Ciph
 	btp.evaluator.Rescale(ct0, btp.params.Scale(), ct0)
 
 	// CAN be removed if po2 input is used!!
-	if ct1 != nil{
+	if ct1 != nil {
 		btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
 		// btp.evaluator.MultByConst(ct1, scale_StoC/math.Pow(2, pow), ct1)
 		btp.evaluator.Rescale(ct1, btp.params.Scale(), ct1)

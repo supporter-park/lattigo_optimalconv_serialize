@@ -4,7 +4,8 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
 )
 
 // StandardDeviation computes the scaled standard deviation of the input vector.

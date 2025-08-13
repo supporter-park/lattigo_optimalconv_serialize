@@ -6,8 +6,8 @@ import (
 	"math/cmplx"
 	"time"
 
-	"github.com/dwkim606/test_lattigo/ckks"
-	"github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ckks"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 )
 
 func example() {

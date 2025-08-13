@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
-	"github.com/dwkim606/test_lattigo/utils"
-	"github.com/stretchr/testify/require"
 	"math"
 	"math/big"
 	"math/bits"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 var flagParamString = flag.String("params", "", "specify the test cryptographic parameters as a JSON string. Overrides -short and -long.")

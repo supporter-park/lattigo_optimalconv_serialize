@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dwkim606/test_lattigo/ring"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
 )
 
 var flagParamString = flag.String("params", "", "specify the test cryptographic parameters as a JSON string. Overrides -short and -long.")

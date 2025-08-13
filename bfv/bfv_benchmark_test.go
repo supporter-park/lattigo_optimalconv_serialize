@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/dwkim606/test_lattigo/rlwe"
+	// "github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 )
 
 func BenchmarkBFV(b *testing.B) {

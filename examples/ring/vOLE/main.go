@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // Vectorized oblivious evaluation is a two-party protocol for the function f(x) = ax + b where a sender

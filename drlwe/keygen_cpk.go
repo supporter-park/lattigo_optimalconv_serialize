@@ -1,10 +1,10 @@
-//Package drlwe implements a distributed (or threshold) version of the CKKS scheme that enables secure multiparty computation solutions with secret-shared secret keys.
+// Package drlwe implements a distributed (or threshold) version of the CKKS scheme that enables secure multiparty computation solutions with secret-shared secret keys.
 package drlwe
 
 import (
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // CollectivePublicKeyGenerator is an interface describing the local steps of a generic RLWE CKG protocol.

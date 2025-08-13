@@ -9,11 +9,14 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
-	"github.com/dwkim606/test_lattigo/utils"
+	// "github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/rlwe"
+	// "github.com/dwkim606/test_lattigo/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 var flagLongTest = flag.Bool("long", false, "run the long test suite (all parameters + secure bootstrapping). Overrides -short and requires -timeout=0.")

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // RelinearizationKeyGenerator is an interface describing the local steps of a generic RLWE RKG protocol

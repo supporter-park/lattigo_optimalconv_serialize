@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"math/bits"
 
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 // MaxLogN is the log2 of the largest supported polynomial modulus degree.
@@ -331,7 +331,8 @@ func (p Parameters) GaloisElementsForRowInnerSum() (galEls []uint64) {
 }
 
 // InverseGaloisElement takes a galois element and returns the galois element
-//  corresponding to the inverse automorphism
+//
+//	corresponding to the inverse automorphism
 func (p Parameters) InverseGaloisElement(galEl uint64) uint64 {
 	twoN := 1 << (p.logN + 1)
 	return ring.ModExp(galEl, twoN-1, uint64(twoN))

@@ -1,9 +1,12 @@
 package dbfv
 
 import (
-	"github.com/dwkim606/test_lattigo/bfv"
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
+	// "github.com/dwkim606/test_lattigo/bfv"
+	// "github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/bfv"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 )
 
 // RefreshProtocol is a struct storing the relevant parameters for the Refresh protocol.

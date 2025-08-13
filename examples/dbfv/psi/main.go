@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dwkim606/test_lattigo/bfv"
-	"github.com/dwkim606/test_lattigo/dbfv"
-	"github.com/dwkim606/test_lattigo/drlwe"
-	"github.com/dwkim606/test_lattigo/ring"
-	"github.com/dwkim606/test_lattigo/rlwe"
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/bfv"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/dbfv"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/drlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 func check(err error) {

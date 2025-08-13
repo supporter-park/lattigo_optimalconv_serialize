@@ -5,7 +5,7 @@ import (
 	"math/bits"
 	"unsafe"
 
-	"github.com/dwkim606/test_lattigo/utils"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
 
 func (r *Ring) minLevelTernary(p1, p2, p3 *Poly) int {
@@ -673,7 +673,7 @@ func (r *Ring) MulScalarBigint(p1 *Poly, scalar *big.Int, p2 *Poly) {
 }
 
 // MulScalarBigintLvl multiplies each coefficient of p1 by a big.Int scalar
-//for the moduli from q_0 up to q_level and writes the result on p2.
+// for the moduli from q_0 up to q_level and writes the result on p2.
 func (r *Ring) MulScalarBigintLvl(level int, p1 *Poly, scalar *big.Int, p2 *Poly) {
 	scalarQi := new(big.Int)
 	for i := 0; i < level+1; i++ {
