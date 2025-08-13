@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/bits"
 
-	"github.com/dwkim606/test_lattigo/ring"
+	// "github.com/dwkim606/test_lattigo/ring"
 	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
 )
 
