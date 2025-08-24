@@ -79,6 +79,44 @@ type encoder struct {
 	gaussianSampler *ring.GaussianSampler
 }
 
+type Modded_encoder struct {
+	params       Parameters
+	ringQ        ring.ModdedRing
+	ringP        ring.ModdedRing
+	bigintChain  []big.Int
+	bigintCoeffs []big.Int
+	qHalf        big.Int
+	polypool     ring.Poly
+	m            int
+	rotGroup     []int
+
+	gaussianSampler ring.GaussianSampler
+}
+
+func MakeLiteralencoder(enc *encoder) (menc Modded_encoder) {
+
+	// Non-pointer
+	menc.params = enc.params
+	menc.m = enc.m
+	menc.rotGroup = enc.rotGroup
+
+	// Pointer
+	menc.ringQ = ring.MakeLiteralRing(*enc.ringQ)
+	menc.ringP = ring.MakeLiteralRing(*enc.ringP)
+	for idx := range enc.bigintChain {
+		menc.bigintChain = append(menc.bigintChain, *enc.bigintChain[idx])
+	}
+	for idx := range enc.bigintCoeffs {
+		menc.bigintCoeffs = append(menc.bigintCoeffs, *enc.bigintCoeffs[idx])
+	}
+	menc.qHalf = *enc.qHalf
+	menc.polypool = *enc.polypool
+
+	menc.gaussianSampler = *enc.gaussianSampler
+
+	return
+}
+
 type encoderComplex128 struct {
 	encoder
 	values      []complex128
@@ -151,6 +189,32 @@ func NewEncoder(params Parameters) Encoder {
 		roots:       roots,
 		values:      make([]complex128, encoder.m>>2),
 		valuesfloat: make([]float64, encoder.m>>1),
+	}
+}
+
+type encoderComplex128Literal struct {
+	Modded_encoder
+	values      []complex128
+	valuesfloat []float64
+	roots       []complex128
+}
+
+func GetLiteralEncoder(enc Modded_encoder) encoderComplex128Literal {
+
+	var angle float64
+	roots := make([]complex128, enc.m+1)
+	for i := 0; i < enc.m; i++ {
+		angle = 2 * 3.141592653589793 * float64(i) / float64(enc.m)
+
+		roots[i] = complex(math.Cos(angle), math.Sin(angle))
+	}
+	roots[enc.m] = roots[0]
+
+	return encoderComplex128Literal{
+		Modded_encoder: enc,
+		roots:          roots,
+		values:         make([]complex128, enc.m>>2),
+		valuesfloat:    make([]float64, enc.m>>1),
 	}
 }
 

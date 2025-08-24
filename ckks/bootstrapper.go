@@ -1,17 +1,174 @@
 package ckks
 
 import (
+	"encoding/gob"
 	"fmt"
 	"math"
 	"math/cmplx"
+	"os"
 
 	// "github.com/dwkim606/test_lattigo/ckks/bettersine"
 	// "github.com/dwkim606/test_lattigo/rlwe"
 	// "github.com/dwkim606/test_lattigo/utils"
 	"github.com/supporter-park/lattigo_optimalconv_serialize/ckks/bettersine"
+	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
 	"github.com/supporter-park/lattigo_optimalconv_serialize/rlwe"
 	"github.com/supporter-park/lattigo_optimalconv_serialize/utils"
 )
+
+type NonPointerBtpMembers struct {
+	params Parameters
+
+	dslots    int // Number of plaintext slots after the re-encoding
+	logdslots int
+
+	encoder encoderComplex128Literal // Encoder
+
+	prescale  float64 // Q[0]/(Q[0]/|m|)
+	postscale float64 // Qi sineeval/(Q[0]/|m|)
+	sinescale float64 // Qi sineeval
+	sqrt2pi   float64 // (1/2pi)^{-2^r}
+	scFac     float64 // 2^{r}
+
+	coeffsToSlotsDiffScale complex128 // Matrice rescaling
+	slotsToCoeffsDiffScale complex128 // Matrice rescaling
+
+	rotKeyIndex []int // a list of the required rotation keys
+}
+
+func (btp *Bootstrapper) build_NPBM() (npbm NonPointerBtpMembers) {
+
+	npbm.dslots = btp.dslots
+	npbm.logdslots = btp.logdslots
+
+	// npbm.encoder = GetLiteralEncoder(btp.encoder)
+
+	npbm.prescale = btp.prescale
+	npbm.postscale = btp.postscale
+	npbm.sinescale = btp.sinescale
+	npbm.sqrt2pi = btp.sqrt2pi
+	npbm.scFac = btp.scFac
+
+	npbm.coeffsToSlotsDiffScale = btp.coeffsToSlotsDiffScale
+	npbm.slotsToCoeffsDiffScale = btp.slotsToCoeffsDiffScale
+
+	npbm.rotKeyIndex = btp.rotKeyIndex
+
+	return npbm
+}
+
+type PointerBtpMembers struct {
+	sineEvalPoly ChebyshevInterpolation
+	arcSinePoly  Poly
+
+	pDFT    []ModdedPtDiagMatrix
+	pDFTInv []ModdedPtDiagMatrix
+}
+
+type ModdedPtDiagMatrix struct {
+	LogSlots   int                  // Log of the number of slots of the plaintext (needed to compute the appropriate rotation keys)
+	N1         int                  // N1 is the number of inner loops of the baby-step giant-step algo used in the evaluation.
+	Level      int                  // Level is the level at which the matrix is encoded (can be circuit dependant)
+	Scale      float64              // Scale is the scale at which the matrix is encoded (can be circuit dependant)
+	Vec        map[int][2]ring.Poly // Vec is the matrix, in diagonal form, where each entry of vec is an indexed non zero diagonal.
+	naive      bool
+	isGaussian bool // Each diagonal of the matrix is of the form [k, ..., k] for k a gaussian integer
+}
+
+func (btp *Bootstrapper) build_PBM() (pbm PointerBtpMembers) {
+
+	pbm.sineEvalPoly = *btp.sineEvalPoly
+	pbm.arcSinePoly = *btp.arcSinePoly
+
+	pbm.pDFT = []ModdedPtDiagMatrix{}
+	for idx := range btp.pDFT {
+		var tmp ModdedPtDiagMatrix
+		tmp.LogSlots = btp.pDFT[idx].LogSlots
+		tmp.N1 = btp.pDFT[idx].N1
+		tmp.Level = btp.pDFT[idx].Level
+		tmp.Scale = btp.pDFT[idx].Scale
+		tmp.naive = btp.pDFT[idx].naive
+		tmp.isGaussian = btp.pDFT[idx].isGaussian
+
+		for k, v := range btp.pDFT[idx].Vec {
+			tmp.Vec[k] = [2]ring.Poly{*v[0], *v[1]}
+		}
+
+		pbm.pDFT = append(pbm.pDFT, tmp)
+	}
+	pbm.pDFTInv = []ModdedPtDiagMatrix{}
+	for idx := range btp.pDFTInv {
+		var tmp ModdedPtDiagMatrix
+		tmp.LogSlots = btp.pDFTInv[idx].LogSlots
+		tmp.N1 = btp.pDFTInv[idx].N1
+		tmp.Level = btp.pDFTInv[idx].Level
+		tmp.Scale = btp.pDFTInv[idx].Scale
+		tmp.naive = btp.pDFTInv[idx].naive
+		tmp.isGaussian = btp.pDFTInv[idx].isGaussian
+
+		for k, v := range btp.pDFTInv[idx].Vec {
+			tmp.Vec[k] = [2]ring.Poly{*v[0], *v[1]}
+		}
+
+		pbm.pDFTInv = append(pbm.pDFTInv, tmp)
+	}
+
+	return pbm
+}
+
+func (btp *Bootstrapper) offload_btp(npbm NonPointerBtpMembers, pbm PointerBtpMembers) {
+
+	err := os.MkdirAll("./btp", os.ModePerm)
+	if err != nil {
+		fmt.Printf("Fail to make directory: %v\n", err)
+	} else {
+		fmt.Printf("Directory '%s' is already exist or succesfully created.\n", "./btp")
+	}
+
+	npbmFile, _ := os.Create("./btp/" + btp.identifier + "npbm.gob")
+	npbmEncoder := gob.NewEncoder(npbmFile)
+	err = npbmEncoder.Encode(npbm)
+	if err != nil {
+		fmt.Println("NPBM encoding error:", err)
+		return
+	}
+
+	pbmFile, _ := os.Create("./btp/" + btp.identifier + "pbm.gob")
+	pbmEncoder := gob.NewEncoder(pbmFile)
+	err = pbmEncoder.Encode(pbm)
+	if err != nil {
+		fmt.Println("PBM encoding error:", err)
+		return
+	}
+}
+
+func onload_btp(npbmFileName string, pbmFileName string) (btp Bootstrapper) {
+
+	var npbm NonPointerBtpMembers
+	var pbm PointerBtpMembers
+
+	npbmFile, _ := os.Open(npbmFileName)
+	defer npbmFile.Close()
+	npbmDecoder := gob.NewDecoder(npbmFile)
+	err := npbmDecoder.Decode(&npbm)
+	if err != nil {
+		fmt.Println("NPBM decoding error:", err)
+		return
+	}
+
+	pbmFile, _ := os.Open(pbmFileName)
+	defer pbmFile.Close()
+	pbmDecoder := gob.NewDecoder(pbmFile)
+	err = pbmDecoder.Decode(&pbm)
+	if err != nil {
+		fmt.Println("PBM decoding error:", err)
+		return
+	}
+
+	// Non-pointer things
+
+	return
+}
 
 // Bootstrapper is a struct to stores a memory pool the plaintext matrices
 // the polynomial approximation and the keys for the bootstrapping.
@@ -40,6 +197,8 @@ type Bootstrapper struct {
 	pDFTInv                []*PtDiagMatrix // Matrice vectors
 
 	rotKeyIndex []int // a list of the required rotation keys
+
+	identifier string
 }
 
 func sin2pi2pi(x complex128) complex128 {
@@ -84,6 +243,25 @@ func NewBootstrapper_mod(params Parameters, btpParams *BootstrappingParameters, 
 		return nil, fmt.Errorf("invalid bootstrapping key: %w", err)
 	}
 	btp.evaluator = btp.evaluator.WithKey(rlwe.EvaluationKey{Rlk: btpKey.Rlk, Rtks: btpKey.Rtks}).(*evaluator)
+
+	return btp, nil
+}
+
+func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string) (btp *Bootstrapper, err error) {
+
+	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
+		return nil, fmt.Errorf("cannot use double angle formul for SinType = Sin -> must use SinType = Cos")
+	}
+
+	btp = newBootstrapper(params, btpParams)
+	btp.pDFT = btp.BootstrappingParameters.GenSlotsToCoeffsMatrix(1.0, btp.encoder)
+
+	btp.BootstrappingKey = &BootstrappingKey{btpKey.Rlk, btpKey.Rtks}
+	if err = btp.CheckKeys(); err != nil {
+		return nil, fmt.Errorf("invalid bootstrapping key: %w", err)
+	}
+	btp.evaluator = btp.evaluator.WithKey(rlwe.EvaluationKey{Rlk: btpKey.Rlk, Rtks: btpKey.Rtks}).(*evaluator)
+	btp.identifier = id
 
 	return btp, nil
 }

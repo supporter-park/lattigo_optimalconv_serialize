@@ -46,6 +46,56 @@ type Ring struct {
 	NttNInv   []uint64   //[N^-1] mod Qi in Montgomery form
 }
 
+type ModdedRing struct {
+	// Polynomial nb.Coefficients
+	N int
+
+	// Moduli
+	Modulus []uint64
+
+	// 2^bit_length(Qi) - 1
+	Mask []uint64
+
+	// Indicates whether NTT can be used with the current ring.
+	AllowsNTT bool
+
+	// Product of the Moduli
+	ModulusBigint big.Int
+
+	// Fast reduction parameters
+	BredParams [][]uint64
+	MredParams []uint64
+
+	RescaleParams [][]uint64
+
+	//NTT Parameters
+	PsiMont    []uint64 //2N-th primitive root in Montgomery form
+	PsiInvMont []uint64 //2N-th inverse primitive root in Montgomery form
+
+	NttPsi    [][]uint64 //powers of the inverse of the 2N-th primitive root in Montgomery form (in bit-reversed order)
+	NttPsiInv [][]uint64 //powers of the inverse of the 2N-th primitive root in Montgomery form (in bit-reversed order)
+	NttNInv   []uint64   //[N^-1] mod Qi in Montgomery form
+}
+
+func MakeLiteralRing(r Ring) (mr ModdedRing) {
+
+	mr.N = r.N
+	mr.Modulus = r.Modulus
+	mr.Mask = r.Mask
+	mr.AllowsNTT = r.AllowsNTT
+	mr.ModulusBigint = *(r.ModulusBigint)
+	mr.BredParams = r.BredParams
+	mr.MredParams = r.MredParams
+	mr.RescaleParams = r.RescaleParams
+	mr.PsiMont = r.PsiMont
+	mr.PsiInvMont = r.PsiInvMont
+	mr.NttPsi = r.NttPsi
+	mr.NttPsiInv = r.NttPsiInv
+	mr.NttNInv = r.NttNInv
+
+	return
+}
+
 // NewRing creates a new RNS Ring with degree N and coefficient moduli Moduli. N must be a power of two larger than 8. Moduli should be
 // a non-empty []uint64 with distinct prime elements. For the Ring instance to support NTT operation, these elements must also be equal
 // to 1 modulo 2*N. Non-nil r and error are returned in the case of non NTT-enabling parameters.
@@ -55,6 +105,26 @@ func NewRing(N int, Moduli []uint64) (r *Ring, err error) {
 	if err != nil {
 		return nil, err
 	}
+	return r, r.genNTTParams()
+}
+
+func NewRingFromLiteral(mr *ModdedRing) (r *Ring, err error) {
+	r = new(Ring)
+
+	r.N = mr.N
+	r.Modulus = mr.Modulus
+	r.Mask = mr.Mask
+	r.AllowsNTT = mr.AllowsNTT
+	r.ModulusBigint = &(mr.ModulusBigint)
+	r.BredParams = mr.BredParams
+	r.MredParams = mr.MredParams
+	r.RescaleParams = mr.RescaleParams
+	r.PsiMont = mr.PsiMont
+	r.PsiInvMont = mr.PsiInvMont
+	r.NttPsi = mr.NttPsi
+	r.NttPsiInv = mr.NttPsiInv
+	r.NttNInv = mr.NttNInv
+
 	return r, r.genNTTParams()
 }
 
