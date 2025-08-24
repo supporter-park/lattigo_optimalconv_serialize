@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/cmplx"
 	"os"
+	"runtime"
 	"time"
 
 	// "github.com/dwkim606/test_lattigo/ckks/bettersine"
@@ -248,13 +249,13 @@ func NewBootstrapper_mod(params Parameters, btpParams *BootstrappingParameters, 
 	return btp, nil
 }
 
-func NewBootstrapper_time(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey) (btp *Bootstrapper, err error) {
+func NewBootstrapper_benchmark(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey) (btp *Bootstrapper, err error) {
 
 	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
 		return nil, fmt.Errorf("cannot use double angle formul for SinType = Sin -> must use SinType = Cos")
 	}
 
-	btp = newBootstrapper_time(params, btpParams)
+	btp = newBootstrapper_benchmark(params, btpParams)
 	btp.pDFT = btp.BootstrappingParameters.GenSlotsToCoeffsMatrix(1.0, btp.encoder)
 
 	btp.BootstrappingKey = &BootstrappingKey{btpKey.Rlk, btpKey.Rtks}
@@ -280,7 +281,11 @@ func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, b
 		return nil, fmt.Errorf("invalid bootstrapping key: %w", err)
 	}
 	btp.evaluator = btp.evaluator.WithKey(rlwe.EvaluationKey{Rlk: btpKey.Rlk, Rtks: btpKey.Rtks}).(*evaluator)
-	btp.identifier = id
+	if id != "" {
+		btp.identifier = id
+	} else {
+		btp.identifier = "default-btp"
+	}
 
 	return btp, nil
 }
@@ -315,8 +320,8 @@ func newBootstrapper(params Parameters, btpParams *BootstrappingParameters) (btp
 	return btp
 }
 
-func newBootstrapper_time(params Parameters, btpParams *BootstrappingParameters) (btp *Bootstrapper) {
-	fmt.Println("Bootstrapper generation with time measure")
+func newBootstrapper_benchmark(params Parameters, btpParams *BootstrappingParameters) (btp *Bootstrapper) {
+	fmt.Println("Bootstrapper generation with time and memory measure")
 	btp = new(Bootstrapper)
 
 	btp.params = params
@@ -333,19 +338,42 @@ func newBootstrapper_time(params Parameters, btpParams *BootstrappingParameters)
 	btp.sinescale = math.Exp2(math.Round(math.Log2(btp.SineEvalModuli.ScalingFactor)))
 	btp.postscale = btp.sinescale / btp.MessageRatio
 
+	bToMb := func(b uint64) uint64 {
+		return b / 1024 / 1024
+	}
+
+	printMemStats := func() {
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+
+		// Alloc을 KB, MB 단위로 변환하여 출력
+		fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+		// fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+		fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
+		fmt.Printf("\tNumGC = %v\n", m.NumGC)
+	}
+
+	printMemStats()
+
 	start := time.Now()
 	btp.encoder = NewEncoder(params)
 	fmt.Println("Encoder generation: ", time.Since(start))
+	printMemStats()
+
 	start = time.Now()
 	btp.evaluator = NewEvaluator(params, rlwe.EvaluationKey{}).(*evaluator) // creates an evaluator without keys for genDFTMatrices
 	fmt.Println("Evaluator generation: ", time.Since(start))
+	printMemStats()
 
 	start = time.Now()
 	btp.genSinePoly()
 	fmt.Println("SinePoly generation: ", time.Since(start))
+	printMemStats()
+
 	start = time.Now()
 	btp.genDFTMatrices()
 	fmt.Println("DFTMatrices generation: ", time.Since(start))
+	printMemStats()
 
 	btp.ctxpool = NewCiphertext(params, 1, params.MaxLevel(), 0)
 

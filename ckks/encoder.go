@@ -452,6 +452,49 @@ type PtDiagMatrix struct {
 	isGaussian bool // Each diagonal of the matrix is of the form [k, ..., k] for k a gaussian integer
 }
 
+type PtDiagMatrixLiteral struct {
+	LogSlots   int                  // Log of the number of slots of the plaintext (needed to compute the appropriate rotation keys)
+	N1         int                  // N1 is the number of inner loops of the baby-step giant-step algo used in the evaluation.
+	Level      int                  // Level is the level at which the matrix is encoded (can be circuit dependant)
+	Scale      float64              // Scale is the scale at which the matrix is encoded (can be circuit dependant)
+	Vec        map[int][2]ring.Poly // Vec is the matrix, in diagonal form, where each entry of vec is an indexed non zero diagonal.
+	naive      bool
+	isGaussian bool // Each diagonal of the matrix is of the form [k, ..., k] for k a gaussian integer
+}
+
+func GetPtDiagMatrixLiteral(pdm PtDiagMatrix) (pdml PtDiagMatrixLiteral) {
+
+	pdml.LogSlots = pdm.LogSlots
+	pdml.N1 = pdm.N1
+	pdml.Level = pdm.Level
+	pdml.Scale = pdm.Scale
+	pdml.naive = pdm.naive
+	pdml.isGaussian = pdm.isGaussian
+
+	for k, v := range pdm.Vec {
+		pdml.Vec[k] = [2]ring.Poly{*v[0], *v[1]}
+	}
+
+	return
+}
+
+func NewPtDiagMatrixFromLiteral(pdml PtDiagMatrixLiteral) (pdm *PtDiagMatrix) {
+
+	pdm = new(PtDiagMatrix)
+	pdm.LogSlots = pdml.LogSlots
+	pdm.N1 = pdml.N1
+	pdm.Level = pdml.Level
+	pdm.Scale = pdml.Scale
+	pdm.naive = pdml.naive
+	pdm.isGaussian = pdml.isGaussian
+
+	for k, v := range pdml.Vec {
+		pdm.Vec[k] = [2]*ring.Poly{ring.NewPolyFromLiteral(v[0]), ring.NewPolyFromLiteral(v[1])}
+	}
+
+	return
+}
+
 func bsgsIndex(el interface{}, slots, N1 int) (index map[int][]int, rotations []int) {
 	index = make(map[int][]int)
 	rotations = []int{}

@@ -25,6 +25,15 @@ func NewPoly(N, nbModuli int) (pol *Poly) {
 	return
 }
 
+func NewPolyFromLiteral(polylit Poly) (pol *Poly) {
+	pol = new(Poly)
+	pol.Coeffs = polylit.Coeffs
+	pol.IsNTT = polylit.IsNTT
+	pol.IsMForm = polylit.IsMForm
+
+	return
+}
+
 // Degree returns the number of coefficients of the polynomial, which equals the degree of the Ring cyclotomic polynomial.
 func (pol *Poly) Degree() int {
 	return len(pol.Coeffs[0])
