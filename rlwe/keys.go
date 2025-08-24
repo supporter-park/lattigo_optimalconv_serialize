@@ -30,6 +30,16 @@ type SwitchingKeyLiteral struct {
 	Value [][2]ring.Poly
 }
 
+func NewSwitchingKeyFromLiteral(swkl SwitchingKeyLiteral) (swk *SwitchingKey) {
+	swk = new(SwitchingKey)
+	for _, v := range swkl.Value {
+		v := v
+		swk.Value = append(swk.Value, [2]*ring.Poly{&v[0], &v[1]})
+	}
+
+	return
+}
+
 // RelinearizationKey is a type for generic RLWE public relinearization keys. It stores a slice with a
 // switching key per relinearizable degree. The switching key at index i is used to relinearize a degree
 // i+2 ciphertexts back to a degree i + 1 one.
@@ -73,7 +83,7 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 	if err != nil {
 		fmt.Printf("Fail to make directory: %v\n", err)
 	} else {
-		fmt.Printf("Directory '%s' is already exist or succesfully created.\n", "./btp")
+		fmt.Printf("Directory '%s' is already exist or succesfully created.\n", "./rtk"+tag)
 	}
 
 	rtkl := GetRotationKeySetLiteral(rtk)
@@ -92,10 +102,29 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 	runtime.GC()
 }
 
-func OnloadRtk(rotations []int) (rtk *RotationKeySet) {
+func OnloadRtk(params Parameters, rotations []int, tag string) (rtk *RotationKeySet) {
 
-	for idx, rot := range rotations {
-		print(idx, rot)
+	rtk = new(RotationKeySet)
+	// Match rotation to real index for each key
+	galEls := make([]uint64, len(rotations), len(rotations)+1)
+	for i, k := range rotations {
+		galEls[i] = params.GaloisElementForColumnRotationBy(k)
+	}
+	galEls = append(galEls, params.GaloisElementForRowRotation())
+
+	var swkl SwitchingKeyLiteral
+	for _, g := range galEls {
+		rtk.Keys[g] = new(SwitchingKey)
+		file, _ := os.Open("./rtk" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
+		defer file.Close()
+		decoder := gob.NewDecoder(file)
+		err := decoder.Decode(&swkl)
+		if err != nil {
+			fmt.Println("Rtk decoding error:", err)
+			return
+		}
+
+		rtk.Keys[g] = NewSwitchingKeyFromLiteral(swkl)
 	}
 
 	return

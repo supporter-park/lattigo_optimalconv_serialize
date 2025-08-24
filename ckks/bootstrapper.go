@@ -52,10 +52,10 @@ func (btp *Bootstrapper) OffloadBTP() {
 	runtime.GC()
 }
 
-func (btp *Bootstrapper) OnloadBTP(fileName string) {
+func (btp *Bootstrapper) OnloadBTP() {
 
 	var mem MembersToExportBTP
-	file, _ := os.Open(fileName)
+	file, _ := os.Open("./btp/" + btp.identifier + ".gob")
 	defer file.Close()
 	decoder := gob.NewDecoder(file)
 	err := decoder.Decode(&mem)
