@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/cmplx"
 	"os"
+	"time"
 
 	// "github.com/dwkim606/test_lattigo/ckks/bettersine"
 	// "github.com/dwkim606/test_lattigo/rlwe"
@@ -247,6 +248,24 @@ func NewBootstrapper_mod(params Parameters, btpParams *BootstrappingParameters, 
 	return btp, nil
 }
 
+func NewBootstrapper_time(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey) (btp *Bootstrapper, err error) {
+
+	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
+		return nil, fmt.Errorf("cannot use double angle formul for SinType = Sin -> must use SinType = Cos")
+	}
+
+	btp = newBootstrapper_time(params, btpParams)
+	btp.pDFT = btp.BootstrappingParameters.GenSlotsToCoeffsMatrix(1.0, btp.encoder)
+
+	btp.BootstrappingKey = &BootstrappingKey{btpKey.Rlk, btpKey.Rtks}
+	if err = btp.CheckKeys(); err != nil {
+		return nil, fmt.Errorf("invalid bootstrapping key: %w", err)
+	}
+	btp.evaluator = btp.evaluator.WithKey(rlwe.EvaluationKey{Rlk: btpKey.Rlk, Rtks: btpKey.Rtks}).(*evaluator)
+
+	return btp, nil
+}
+
 func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string) (btp *Bootstrapper, err error) {
 
 	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
@@ -290,6 +309,43 @@ func newBootstrapper(params Parameters, btpParams *BootstrappingParameters) (btp
 
 	btp.genSinePoly()
 	btp.genDFTMatrices()
+
+	btp.ctxpool = NewCiphertext(params, 1, params.MaxLevel(), 0)
+
+	return btp
+}
+
+func newBootstrapper_time(params Parameters, btpParams *BootstrappingParameters) (btp *Bootstrapper) {
+	fmt.Println("Bootstrapper generation with time measure")
+	btp = new(Bootstrapper)
+
+	btp.params = params
+	btp.BootstrappingParameters = *btpParams.Copy()
+
+	btp.dslots = params.Slots()
+	btp.logdslots = params.LogSlots()
+	if params.LogSlots() < params.MaxLogSlots() {
+		btp.dslots <<= 1
+		btp.logdslots++
+	}
+
+	btp.prescale = math.Exp2(math.Round(math.Log2(float64(params.Q()[0]) / btp.MessageRatio)))
+	btp.sinescale = math.Exp2(math.Round(math.Log2(btp.SineEvalModuli.ScalingFactor)))
+	btp.postscale = btp.sinescale / btp.MessageRatio
+
+	start := time.Now()
+	btp.encoder = NewEncoder(params)
+	fmt.Println("Encoder generation (ms): ", time.Since(start)/1e6)
+	start = time.Now()
+	btp.evaluator = NewEvaluator(params, rlwe.EvaluationKey{}).(*evaluator) // creates an evaluator without keys for genDFTMatrices
+	fmt.Println("Evaluator generation (ms): ", time.Since(start)/1e6)
+
+	start = time.Now()
+	btp.genSinePoly()
+	fmt.Println("SinePoly generation (ms): ", time.Since(start)/1e6)
+	start = time.Now()
+	btp.genDFTMatrices()
+	fmt.Println("DFTMatrices generation (ms): ", time.Since(start)/1e6)
 
 	btp.ctxpool = NewCiphertext(params, 1, params.MaxLevel(), 0)
 
