@@ -2,6 +2,11 @@ package rlwe
 
 import (
 	"encoding/binary"
+	"encoding/gob"
+	"fmt"
+	"os"
+	"runtime"
+	"strconv"
 
 	"github.com/supporter-park/lattigo_optimalconv_serialize/ring"
 )
@@ -21,6 +26,10 @@ type SwitchingKey struct {
 	Value [][2]*ring.Poly
 }
 
+type SwitchingKeyLiteral struct {
+	Value [][2]ring.Poly
+}
+
 // RelinearizationKey is a type for generic RLWE public relinearization keys. It stores a slice with a
 // switching key per relinearizable degree. The switching key at index i is used to relinearize a degree
 // i+2 ciphertexts back to a degree i + 1 one.
@@ -34,11 +43,53 @@ type RotationKeySet struct {
 	Keys map[uint64]*SwitchingKey
 }
 
+type RotationKeySetLiteral struct {
+	Keys map[uint64]SwitchingKeyLiteral
+}
+
+func GetRotationKeySetLiteral(rtks *RotationKeySet) (rtksl RotationKeySetLiteral) {
+
+	for k, v := range rtks.Keys {
+		var tmp SwitchingKeyLiteral
+		for jdx := range v.Value {
+			tmp.Value = append(tmp.Value, [2]ring.Poly{*(v.Value[jdx][0]), *(v.Value[jdx][1])})
+		}
+		rtksl.Keys[k] = tmp
+	}
+
+	return
+}
+
 // EvaluationKey is a type for storing generic RLWE public evaluation keys. An evaluation key is a union
 // of a relinearization key and a set of rotation keys.
 type EvaluationKey struct {
 	Rlk  *RelinearizationKey
 	Rtks *RotationKeySet
+}
+
+func OffloadRtk(rtk *RotationKeySet, tag string) {
+
+	err := os.MkdirAll("./rtk"+tag, os.ModePerm)
+	if err != nil {
+		fmt.Printf("Fail to make directory: %v\n", err)
+	} else {
+		fmt.Printf("Directory '%s' is already exist or succesfully created.\n", "./btp")
+	}
+
+	rtkl := GetRotationKeySetLiteral(rtk)
+
+	for k, v := range rtkl.Keys {
+		file, _ := os.Create("./rtk/" + strconv.FormatUint(k, 10) + ".gob")
+		encoder := gob.NewEncoder(file)
+		err = encoder.Encode(v)
+		if err != nil {
+			fmt.Println("Rtk encoding error:", err)
+			return
+		}
+	}
+
+	rtk = nil
+	runtime.GC()
 }
 
 // NewSecretKey generates a new SecretKey with zero values.
