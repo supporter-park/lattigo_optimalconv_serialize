@@ -92,6 +92,15 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 	runtime.GC()
 }
 
+func OnloadRtk(rotations []int) (rtk *RotationKeySet) {
+
+	for idx, rot := range rotations {
+		print(idx, rot)
+	}
+
+	return
+}
+
 // NewSecretKey generates a new SecretKey with zero values.
 func NewSecretKey(params Parameters) *SecretKey {
 
