@@ -101,6 +101,7 @@ type Bootstrapper struct {
 	rotKeyIndex []int // a list of the required rotation keys
 
 	identifier string
+	isDry      bool
 }
 
 func sin2pi2pi(x complex128) complex128 {
@@ -167,7 +168,7 @@ func NewBootstrapper_benchmark(params Parameters, btpParams *BootstrappingParame
 	return btp, nil
 }
 
-func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string) (btp *Bootstrapper, err error) {
+func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string, isDry bool) (btp *Bootstrapper, err error) {
 
 	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
 		return nil, fmt.Errorf("cannot use double angle formul for SinType = Sin -> must use SinType = Cos")
@@ -187,6 +188,8 @@ func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, b
 	} else {
 		btp.identifier = "default-btp"
 	}
+
+	btp.isDry = isDry
 
 	return btp, nil
 }

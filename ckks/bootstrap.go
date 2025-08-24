@@ -13,176 +13,187 @@ import (
 // If the input ciphertext level is zero, the input scale must be an exact power of two smaller or equal to round(Q0/2^{10}).
 // If the input ciphertext is at level one or more, the input scale does not need to be an exact power of two as one level
 // can be used to do a scale matching.
-func (btp *Bootstrapper) Bootstrapp(ct *Ciphertext) *Ciphertext {
+func (btp *Bootstrapper) Bootstrapp(ct *Ciphertext) (ct0 *Ciphertext) {
 
-	//var t time.Time
-	var ct0, ct1 *Ciphertext
+	if !btp.isDry {
+		//var t time.Time
+		// var ct0, ct1 *Ciphertext
+		var ct1 *Ciphertext
 
-	// Drops the level to 1
-	for ct.Level() > 1 {
-		btp.evaluator.DropLevel(ct, 1)
-	}
-
-	// Brings the ciphertext scale to Q0/2^{10}
-	if ct.Level() == 1 {
-
-		// if one level is available, then uses it to match the scale
-		btp.evaluator.SetScale(ct, btp.prescale)
-
-		// then drops to level 0
-		for ct.Level() != 0 {
+		// Drops the level to 1
+		for ct.Level() > 1 {
 			btp.evaluator.DropLevel(ct, 1)
 		}
 
-	} else {
+		// Brings the ciphertext scale to Q0/2^{10}
+		if ct.Level() == 1 {
 
-		// else drop to level 0
-		for ct.Level() != 0 {
-			btp.evaluator.DropLevel(ct, 1)
+			// if one level is available, then uses it to match the scale
+			btp.evaluator.SetScale(ct, btp.prescale)
+
+			// then drops to level 0
+			for ct.Level() != 0 {
+				btp.evaluator.DropLevel(ct, 1)
+			}
+
+		} else {
+
+			// else drop to level 0
+			for ct.Level() != 0 {
+				btp.evaluator.DropLevel(ct, 1)
+			}
+
+			// and does an integer constant mult by round((Q0/Delta_m)/ctscle)
+
+			if btp.prescale < ct.Scale {
+				panic("ciphetext scale > Q[0]/(Q[0]/Delta_m)")
+			}
+			btp.evaluator.ScaleUp(ct, math.Round(btp.prescale/ct.Scale), ct)
 		}
 
-		// and does an integer constant mult by round((Q0/Delta_m)/ctscle)
+		// ModUp ct_{Q_0} -> ct_{Q_L}
+		t := time.Now()
+		ct = btp.modUp(ct)
+		fmt.Println("After ModUp  :", time.Since(t), ct.Level(), math.Log2(ct.Scale))
 
-		if btp.prescale < ct.Scale {
-			panic("ciphetext scale > Q[0]/(Q[0]/Delta_m)")
-		}
-		btp.evaluator.ScaleUp(ct, math.Round(btp.prescale/ct.Scale), ct)
+		// Brings the ciphertext scale to sineQi/(Q0/scale) if its under
+		btp.evaluator.ScaleUp(ct, math.Round(btp.postscale/ct.Scale), ct)
+
+		//SubSum X -> (N/dslots) * Y^dslots
+		t = time.Now()
+		ct = btp.subSum(ct)
+		fmt.Println("After SubSum :", time.Since(t))
+		// Part 1 : Coeffs to slots
+
+		t = time.Now()
+		ct0, ct1 = CoeffsToSlots(ct, btp.pDFTInv, btp.evaluator)
+		fmt.Println("After CtS    :", time.Since(t))
+
+		// Part 2 : SineEval
+		t = time.Now()
+		ct0, ct1 = btp.evaluateSine(ct0, ct1)
+		fmt.Println("After Sine   :", time.Since(t))
+
+		// Part 3 : Slots to coeffs
+		t = time.Now()
+		ct0 = SlotsToCoeffs(ct0, ct1, btp.pDFT, btp.evaluator)
+
+		// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
+		fmt.Println("After StC    :", time.Since(t))
 	}
 
-	// ModUp ct_{Q_0} -> ct_{Q_L}
-	t := time.Now()
-	ct = btp.modUp(ct)
-	fmt.Println("After ModUp  :", time.Since(t), ct.Level(), math.Log2(ct.Scale))
-
-	// Brings the ciphertext scale to sineQi/(Q0/scale) if its under
-	btp.evaluator.ScaleUp(ct, math.Round(btp.postscale/ct.Scale), ct)
-
-	//SubSum X -> (N/dslots) * Y^dslots
-	t = time.Now()
-	ct = btp.subSum(ct)
-	fmt.Println("After SubSum :", time.Since(t))
-	// Part 1 : Coeffs to slots
-
-	t = time.Now()
-	ct0, ct1 = CoeffsToSlots(ct, btp.pDFTInv, btp.evaluator)
-	fmt.Println("After CtS    :", time.Since(t))
-
-	// Part 2 : SineEval
-	t = time.Now()
-	ct0, ct1 = btp.evaluateSine(ct0, ct1)
-	fmt.Println("After Sine   :", time.Since(t))
-
-	// Part 3 : Slots to coeffs
-	t = time.Now()
-	ct0 = SlotsToCoeffs(ct0, ct1, btp.pDFT, btp.evaluator)
-
-	// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
-	fmt.Println("After StC    :", time.Since(t))
-	return ct0
+	return
 }
 
 // Bootstrapp modified for Conv operation (added by DWKim)
 // If the input ciphertext level is zero, the input scale must be an exact power of two smaller or equal to round(Q0/2^{10}).
 // If the input ciphertext is at level one or more, the input scale does not need to be an exact power of two as one level
 // can be used to do a scale matching.
-func (btp *Bootstrapper) BootstrappConv_CtoS(ct *Ciphertext) (*Ciphertext, *Ciphertext, float64) {
+func (btp *Bootstrapper) BootstrappConv_CtoS(ct *Ciphertext) (ct0 *Ciphertext, ct1 *Ciphertext, scale_StoC float64) {
 
-	//var t time.Time
-	var ct0, ct1 *Ciphertext
+	if !btp.isDry {
 
-	// Drops the level to 1
-	for ct.Level() > 1 {
-		btp.evaluator.DropLevel(ct, 1)
-	}
+		//var t time.Time
+		// var ct0, ct1 *Ciphertext
 
-	// Brings the ciphertext scale to Q0/2^{10}
-	if ct.Level() == 1 {
-
-		// if one level is available, then uses it to match the scale
-		btp.evaluator.SetScale(ct, btp.prescale)
-
-		// then drops to level 0
-		for ct.Level() != 0 {
+		// Drops the level to 1
+		for ct.Level() > 1 {
 			btp.evaluator.DropLevel(ct, 1)
 		}
 
-	} else {
+		// Brings the ciphertext scale to Q0/2^{10}
+		if ct.Level() == 1 {
 
-		// else drop to level 0
-		for ct.Level() != 0 {
-			btp.evaluator.DropLevel(ct, 1)
+			// if one level is available, then uses it to match the scale
+			btp.evaluator.SetScale(ct, btp.prescale)
+
+			// then drops to level 0
+			for ct.Level() != 0 {
+				btp.evaluator.DropLevel(ct, 1)
+			}
+
+		} else {
+
+			// else drop to level 0
+			for ct.Level() != 0 {
+				btp.evaluator.DropLevel(ct, 1)
+			}
+
+			// and does an integer constant mult by round((Q0/Delta_m)/ctscle)
+
+			if btp.prescale < ct.Scale {
+				panic("ciphetext scale > Q[0]/(Q[0]/Delta_m)")
+			}
+			btp.evaluator.ScaleUp(ct, math.Round(btp.prescale/ct.Scale), ct)
 		}
 
-		// and does an integer constant mult by round((Q0/Delta_m)/ctscle)
+		// fmt.Println("btp scale: ", math.Log2(ct.Scale))
 
-		if btp.prescale < ct.Scale {
-			panic("ciphetext scale > Q[0]/(Q[0]/Delta_m)")
+		// ModUp ct_{Q_0} -> ct_{Q_L}
+		//t = time.Now()
+		ct = btp.modUp(ct)
+		//log.Println("After ModUp  :", time.Now().Sub(t), ct.Level(), ct.Scale())
+
+		// Brings the ciphertext scale to sineQi/(Q0/scale) if its under
+		btp.evaluator.ScaleUp(ct, math.Round(btp.postscale/ct.Scale), ct)
+
+		//SubSum X -> (N/dslots) * Y^dslots
+		//t = time.Now()
+		ct = btp.subSum(ct)
+		//log.Println("After SubSum :", time.Now().Sub(t), ct.Level(), ct.Scale())
+		// Part 1 : Coeffs to slots
+
+		//t = time.Now()
+		ct0, ct1 = CoeffsToSlots(ct, btp.pDFTInv, btp.evaluator)
+		//log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+
+		// Part 2 : SineEval
+		//t = time.Now()
+		ct0, ct1 = btp.evaluateSine(ct0, ct1)
+		//log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+
+		// Rescaling factor to set the final ciphertext to the desired scale
+		qDiff := float64(btp.params.Q()[0]) / math.Exp2(math.Round(math.Log2(float64(btp.params.Q()[0]))))
+		scale_StoC = qDiff * btp.params.Scale() / btp.postscale
+
+		// TO BE combined with BN	// divided by 2^pow to make all inputs from ~ N(0,1) to be contained in [-1, 1]
+		btp.evaluator.MultByConst(ct0, scale_StoC, ct0)
+		// btp.evaluator.MultByConst(ct0, scale_StoC/math.Pow(2, pow), ct0)
+		btp.evaluator.Rescale(ct0, btp.params.Scale(), ct0)
+
+		// CAN be removed if po2 input is used!!
+		if ct1 != nil {
+			btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
+			// btp.evaluator.MultByConst(ct1, scale_StoC/math.Pow(2, pow), ct1)
+			btp.evaluator.Rescale(ct1, btp.params.Scale(), ct1)
 		}
-		btp.evaluator.ScaleUp(ct, math.Round(btp.prescale/ct.Scale), ct)
+
+		// btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
+
+		// fmt.Print("scle_StoC: ", scale_StoC)
+
+		// Part 3 : Slots to coeffs
+		//t = time.Now()
+		// ct0 = SlotsToCoeffs(ct0, ct1, btp.pDFT, btp.evaluator)
+
+		// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
+		//log.Println("After StC    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
 	}
 
-	// fmt.Println("btp scale: ", math.Log2(ct.Scale))
-
-	// ModUp ct_{Q_0} -> ct_{Q_L}
-	//t = time.Now()
-	ct = btp.modUp(ct)
-	//log.Println("After ModUp  :", time.Now().Sub(t), ct.Level(), ct.Scale())
-
-	// Brings the ciphertext scale to sineQi/(Q0/scale) if its under
-	btp.evaluator.ScaleUp(ct, math.Round(btp.postscale/ct.Scale), ct)
-
-	//SubSum X -> (N/dslots) * Y^dslots
-	//t = time.Now()
-	ct = btp.subSum(ct)
-	//log.Println("After SubSum :", time.Now().Sub(t), ct.Level(), ct.Scale())
-	// Part 1 : Coeffs to slots
-
-	//t = time.Now()
-	ct0, ct1 = CoeffsToSlots(ct, btp.pDFTInv, btp.evaluator)
-	//log.Println("After CtS    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
-
-	// Part 2 : SineEval
-	//t = time.Now()
-	ct0, ct1 = btp.evaluateSine(ct0, ct1)
-	//log.Println("After Sine   :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
-
-	// Rescaling factor to set the final ciphertext to the desired scale
-	qDiff := float64(btp.params.Q()[0]) / math.Exp2(math.Round(math.Log2(float64(btp.params.Q()[0]))))
-	scale_StoC := qDiff * btp.params.Scale() / btp.postscale
-
-	// TO BE combined with BN	// divided by 2^pow to make all inputs from ~ N(0,1) to be contained in [-1, 1]
-	btp.evaluator.MultByConst(ct0, scale_StoC, ct0)
-	// btp.evaluator.MultByConst(ct0, scale_StoC/math.Pow(2, pow), ct0)
-	btp.evaluator.Rescale(ct0, btp.params.Scale(), ct0)
-
-	// CAN be removed if po2 input is used!!
-	if ct1 != nil {
-		btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
-		// btp.evaluator.MultByConst(ct1, scale_StoC/math.Pow(2, pow), ct1)
-		btp.evaluator.Rescale(ct1, btp.params.Scale(), ct1)
-	}
-
-	// btp.evaluator.MultByConst(ct1, scale_StoC, ct1)
-
-	// fmt.Print("scle_StoC: ", scale_StoC)
-
-	// Part 3 : Slots to coeffs
-	//t = time.Now()
-	// ct0 = SlotsToCoeffs(ct0, ct1, btp.pDFT, btp.evaluator)
-
-	// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
-	//log.Println("After StC    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
-	return ct0, ct1, scale_StoC
+	return
 }
 
 func (btp *Bootstrapper) BootstrappConv_StoC(ct0, ct1 *Ciphertext) *Ciphertext {
 
-	// Part 3 : Slots to coeffs
-	// t = time.Now()
-	ct0 = SlotsToCoeffs(ct0, ct1, btp.pDFT, btp.evaluator)
+	if !btp.isDry {
+		// Part 3 : Slots to coeffs
+		// t = time.Now()
+		ct0 = SlotsToCoeffs(ct0, ct1, btp.pDFT, btp.evaluator)
 
-	// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
-	//log.Println("After StC    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+		// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
+		//log.Println("After StC    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	}
+
 	return ct0
 }
 
