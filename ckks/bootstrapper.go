@@ -335,17 +335,17 @@ func newBootstrapper_time(params Parameters, btpParams *BootstrappingParameters)
 
 	start := time.Now()
 	btp.encoder = NewEncoder(params)
-	fmt.Println("Encoder generation (ms): ", time.Since(start)/1e6)
+	fmt.Println("Encoder generation (ms): ", time.Since(start))
 	start = time.Now()
 	btp.evaluator = NewEvaluator(params, rlwe.EvaluationKey{}).(*evaluator) // creates an evaluator without keys for genDFTMatrices
-	fmt.Println("Evaluator generation (ms): ", time.Since(start)/1e6)
+	fmt.Println("Evaluator generation (ms): ", time.Since(start))
 
 	start = time.Now()
 	btp.genSinePoly()
-	fmt.Println("SinePoly generation (ms): ", time.Since(start)/1e6)
+	fmt.Println("SinePoly generation (ms): ", time.Since(start))
 	start = time.Now()
 	btp.genDFTMatrices()
-	fmt.Println("DFTMatrices generation (ms): ", time.Since(start)/1e6)
+	fmt.Println("DFTMatrices generation (ms): ", time.Since(start))
 
 	btp.ctxpool = NewCiphertext(params, 1, params.MaxLevel(), 0)
 
