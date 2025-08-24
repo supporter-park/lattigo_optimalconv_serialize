@@ -22,7 +22,7 @@ type MembersToExportBTP struct {
 	pDFTInv []PtDiagMatrixLiteral // Matrice vectors
 }
 
-func (btp *Bootstrapper) offload_btp() {
+func (btp *Bootstrapper) OffloadBTP() {
 
 	err := os.MkdirAll("./btp", os.ModePerm)
 	if err != nil {
@@ -52,7 +52,7 @@ func (btp *Bootstrapper) offload_btp() {
 	runtime.GC()
 }
 
-func (btp *Bootstrapper) onload_btp(fileName string) {
+func (btp *Bootstrapper) OnloadBTP(fileName string) {
 
 	var mem MembersToExportBTP
 	file, _ := os.Open(fileName)
@@ -60,7 +60,7 @@ func (btp *Bootstrapper) onload_btp(fileName string) {
 	decoder := gob.NewDecoder(file)
 	err := decoder.Decode(&mem)
 	if err != nil {
-		fmt.Println("NPBM decoding error:", err)
+		fmt.Println("BTP decoding error:", err)
 		return
 	}
 
