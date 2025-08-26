@@ -407,6 +407,7 @@ func GetPtDiagMatrixLiteral(pdm *PtDiagMatrix) (pdml PtDiagMatrixLiteral) {
 	pdml.naive = pdm.naive
 	pdml.isGaussian = pdm.isGaussian
 
+	pdml.Vec = make(map[int][2]ring.Poly)
 	for k, v := range pdm.Vec {
 		pdml.Vec[k] = [2]ring.Poly{*v[0], *v[1]}
 	}
@@ -424,6 +425,7 @@ func NewPtDiagMatrixFromLiteral(pdml PtDiagMatrixLiteral) (pdm *PtDiagMatrix) {
 	pdm.naive = pdml.naive
 	pdm.isGaussian = pdml.isGaussian
 
+	pdm.Vec = make(map[int][2]*ring.Poly)
 	for k, v := range pdml.Vec {
 		pdm.Vec[k] = [2]*ring.Poly{ring.NewPolyFromLiteral(v[0]), ring.NewPolyFromLiteral(v[1])}
 	}
