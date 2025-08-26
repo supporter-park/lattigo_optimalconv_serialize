@@ -18,8 +18,8 @@ import (
 )
 
 type MembersToExportBTP struct {
-	pDFT    []PtDiagMatrixLiteral // Matrice vectors
-	pDFTInv []PtDiagMatrixLiteral // Matrice vectors
+	PDFT    []PtDiagMatrixLiteral // Matrice vectors
+	PDFTInv []PtDiagMatrixLiteral // Matrice vectors
 }
 
 func (btp *Bootstrapper) OffloadBTP() {
@@ -32,13 +32,13 @@ func (btp *Bootstrapper) OffloadBTP() {
 	}
 
 	var mem MembersToExportBTP
-	mem.pDFT = make([]PtDiagMatrixLiteral, len(btp.pDFT))
-	mem.pDFTInv = make([]PtDiagMatrixLiteral, len(btp.pDFTInv))
+	mem.PDFT = make([]PtDiagMatrixLiteral, len(btp.pDFT))
+	mem.PDFTInv = make([]PtDiagMatrixLiteral, len(btp.pDFTInv))
 	for idx := range btp.pDFT {
-		mem.pDFT[idx] = GetPtDiagMatrixLiteral(btp.pDFT[idx])
+		mem.PDFT[idx] = GetPtDiagMatrixLiteral(btp.pDFT[idx])
 	}
 	for idx := range btp.pDFTInv {
-		mem.pDFTInv[idx] = GetPtDiagMatrixLiteral(btp.pDFTInv[idx])
+		mem.PDFTInv[idx] = GetPtDiagMatrixLiteral(btp.pDFTInv[idx])
 	}
 
 	file, _ := os.Create("./btp/" + btp.identifier + ".gob")
@@ -68,14 +68,14 @@ func (btp *Bootstrapper) OnloadBTP() {
 		return
 	}
 
-	btp.pDFT = make([]*PtDiagMatrix, len(mem.pDFT))
-	btp.pDFTInv = make([]*PtDiagMatrix, len(mem.pDFTInv))
-	for idx := range mem.pDFT {
-		btp.pDFT[idx] = NewPtDiagMatrixFromLiteral(mem.pDFT[idx])
+	btp.pDFT = make([]*PtDiagMatrix, len(mem.PDFT))
+	btp.pDFTInv = make([]*PtDiagMatrix, len(mem.PDFTInv))
+	for idx := range mem.PDFT {
+		btp.pDFT[idx] = NewPtDiagMatrixFromLiteral(mem.PDFT[idx])
 	}
-	for idx := range mem.pDFTInv {
+	for idx := range mem.PDFTInv {
 		btp.pDFTInv = append(btp.pDFTInv, new(PtDiagMatrix))
-		btp.pDFTInv[idx] = NewPtDiagMatrixFromLiteral(mem.pDFTInv[idx])
+		btp.pDFTInv[idx] = NewPtDiagMatrixFromLiteral(mem.PDFTInv[idx])
 	}
 
 	btp.isReady = true
