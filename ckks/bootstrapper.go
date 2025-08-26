@@ -33,10 +33,12 @@ func (btp *Bootstrapper) OffloadBTP() {
 
 	var mem MembersToExportBTP
 	for idx := range btp.pDFT {
-		mem.pDFT = append(mem.pDFT, GetPtDiagMatrixLiteral(*btp.pDFT[idx]))
+		mem.pDFT = append(mem.pDFT, PtDiagMatrixLiteral{})
+		mem.pDFT[idx] = GetPtDiagMatrixLiteral(btp.pDFT[idx])
 	}
 	for idx := range btp.pDFTInv {
-		mem.pDFTInv = append(mem.pDFTInv, GetPtDiagMatrixLiteral(*btp.pDFTInv[idx]))
+		mem.pDFTInv = append(mem.pDFTInv, PtDiagMatrixLiteral{})
+		mem.pDFTInv[idx] = GetPtDiagMatrixLiteral(btp.pDFTInv[idx])
 	}
 
 	file, _ := os.Create("./btp/" + btp.identifier + ".gob")

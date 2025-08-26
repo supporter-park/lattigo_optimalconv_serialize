@@ -398,7 +398,7 @@ type PtDiagMatrixLiteral struct {
 	isGaussian bool // Each diagonal of the matrix is of the form [k, ..., k] for k a gaussian integer
 }
 
-func GetPtDiagMatrixLiteral(pdm PtDiagMatrix) (pdml PtDiagMatrixLiteral) {
+func GetPtDiagMatrixLiteral(pdm *PtDiagMatrix) (pdml PtDiagMatrixLiteral) {
 
 	pdml.LogSlots = pdm.LogSlots
 	pdml.N1 = pdm.N1
