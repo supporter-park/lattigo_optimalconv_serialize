@@ -41,6 +41,8 @@ func (btp *Bootstrapper) OffloadBTP() {
 		mem.PDFTInv[idx] = GetPtDiagMatrixLiteral(btp.pDFTInv[idx])
 	}
 
+	gob.Register(MembersToExportBTP{})
+
 	file, _ := os.Create("./btp/" + btp.identifier + ".gob")
 	defer file.Close()
 	encoder := gob.NewEncoder(file)
