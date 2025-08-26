@@ -116,6 +116,16 @@ type Bootstrapper struct {
 	isReady    bool
 }
 
+func (btp *Bootstrapper) GetId() string {
+
+	return btp.identifier
+}
+
+func (btp *Bootstrapper) ToggleReady() {
+
+	btp.isReady = !btp.isReady
+}
+
 func sin2pi2pi(x complex128) complex128 {
 	return cmplx.Sin(6.283185307179586*x) / 6.283185307179586
 }
