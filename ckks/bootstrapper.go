@@ -32,12 +32,12 @@ func (btp *Bootstrapper) OffloadBTP() {
 	}
 
 	var mem MembersToExportBTP
+	mem.pDFT = make([]PtDiagMatrixLiteral, len(btp.pDFT))
+	mem.pDFTInv = make([]PtDiagMatrixLiteral, len(btp.pDFTInv))
 	for idx := range btp.pDFT {
-		mem.pDFT = append(mem.pDFT, PtDiagMatrixLiteral{})
 		mem.pDFT[idx] = GetPtDiagMatrixLiteral(btp.pDFT[idx])
 	}
 	for idx := range btp.pDFTInv {
-		mem.pDFTInv = append(mem.pDFTInv, PtDiagMatrixLiteral{})
 		mem.pDFTInv[idx] = GetPtDiagMatrixLiteral(btp.pDFTInv[idx])
 	}
 
@@ -67,8 +67,9 @@ func (btp *Bootstrapper) OnloadBTP() {
 		return
 	}
 
+	btp.pDFT = make([]*PtDiagMatrix, len(mem.pDFT))
+	btp.pDFTInv = make([]*PtDiagMatrix, len(mem.pDFTInv))
 	for idx := range mem.pDFT {
-		btp.pDFT = append(btp.pDFT, new(PtDiagMatrix))
 		btp.pDFT[idx] = NewPtDiagMatrixFromLiteral(mem.pDFT[idx])
 	}
 	for idx := range mem.pDFTInv {
