@@ -49,6 +49,7 @@ func (btp *Bootstrapper) OffloadBTP() {
 
 	btp.pDFT = nil
 	btp.pDFTInv = nil
+	btp.isReady = false
 	runtime.GC()
 }
 
@@ -65,11 +66,15 @@ func (btp *Bootstrapper) OnloadBTP() {
 	}
 
 	for idx := range mem.pDFT {
-		btp.pDFT = append(btp.pDFT, NewPtDiagMatrixFromLiteral(mem.pDFT[idx]))
+		btp.pDFT = append(btp.pDFT, new(PtDiagMatrix))
+		btp.pDFT[idx] = NewPtDiagMatrixFromLiteral(mem.pDFT[idx])
 	}
 	for idx := range mem.pDFTInv {
-		btp.pDFTInv = append(btp.pDFTInv, NewPtDiagMatrixFromLiteral(mem.pDFTInv[idx]))
+		btp.pDFTInv = append(btp.pDFTInv, new(PtDiagMatrix))
+		btp.pDFTInv[idx] = NewPtDiagMatrixFromLiteral(mem.pDFTInv[idx])
 	}
+
+	btp.isReady = true
 }
 
 // Bootstrapper is a struct to stores a memory pool the plaintext matrices
@@ -102,6 +107,7 @@ type Bootstrapper struct {
 
 	identifier string
 	isDry      bool
+	isReady    bool
 }
 
 func sin2pi2pi(x complex128) complex128 {
@@ -190,6 +196,7 @@ func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, b
 	}
 
 	btp.isDry = isDry
+	btp.isReady = true
 
 	return btp, nil
 }
