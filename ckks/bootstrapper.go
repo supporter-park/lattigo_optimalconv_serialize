@@ -42,6 +42,7 @@ func (btp *Bootstrapper) OffloadBTP() {
 	}
 
 	file, _ := os.Create("./btp/" + btp.identifier + ".gob")
+	defer file.Close()
 	encoder := gob.NewEncoder(file)
 	err = encoder.Encode(mem)
 	if err != nil {

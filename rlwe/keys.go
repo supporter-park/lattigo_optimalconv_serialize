@@ -90,6 +90,7 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 
 	for k, v := range rtkl.Keys {
 		file, _ := os.Create("./rtk/" + strconv.FormatUint(k, 10) + ".gob")
+		defer file.Close()
 		encoder := gob.NewEncoder(file)
 		err = encoder.Encode(v)
 		if err != nil {
