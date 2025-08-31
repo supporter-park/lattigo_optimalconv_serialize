@@ -59,6 +59,7 @@ type RotationKeySetLiteral struct {
 
 func GetRotationKeySetLiteral(rtks *RotationKeySet) (rtksl RotationKeySetLiteral) {
 
+	rtksl.Keys = make(map[uint64]SwitchingKeyLiteral)
 	for k, v := range rtks.Keys {
 		var tmp SwitchingKeyLiteral
 		tmp.Value = make([][2]ring.Poly, len(v.Value))
