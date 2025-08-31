@@ -61,6 +61,7 @@ func GetRotationKeySetLiteral(rtks *RotationKeySet) (rtksl RotationKeySetLiteral
 
 	for k, v := range rtks.Keys {
 		var tmp SwitchingKeyLiteral
+		tmp.Value = make([][2]ring.Poly, len(v.Value))
 		for jdx := range v.Value {
 			tmp.Value = append(tmp.Value, [2]ring.Poly{*(v.Value[jdx][0]), *(v.Value[jdx][1])})
 		}
@@ -79,7 +80,7 @@ type EvaluationKey struct {
 
 func OffloadRtk(rtk *RotationKeySet, tag string) {
 
-	err := os.MkdirAll("./rtk"+tag, os.ModePerm)
+	err := os.MkdirAll("./rtk-"+tag, os.ModePerm)
 	if err != nil {
 		fmt.Printf("Fail to make directory: %v\n", err)
 	} else {
@@ -116,7 +117,7 @@ func OnloadRtk(params Parameters, rotations []int, tag string) (rtk *RotationKey
 	var swkl SwitchingKeyLiteral
 	for _, g := range galEls {
 		rtk.Keys[g] = new(SwitchingKey)
-		file, _ := os.Open("./rtk" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
+		file, _ := os.Open("./rtk-" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
 		defer file.Close()
 		decoder := gob.NewDecoder(file)
 		err := decoder.Decode(&swkl)
