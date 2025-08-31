@@ -56,6 +56,7 @@ func OnloadRtk(params Parameters, rotations []int, tag string) (rtk *rlwe.Rotati
 	galEls = append(galEls, params.GaloisElementForRowRotation())
 
 	var swkl rlwe.SwitchingKeyLiteral
+	rtk.Keys = make(map[uint64]*rlwe.SwitchingKey)
 	for _, g := range galEls {
 		rtk.Keys[g] = new(rlwe.SwitchingKey)
 		file, _ := os.Open("./rtk" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
