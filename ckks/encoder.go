@@ -389,11 +389,11 @@ type PtDiagMatrix struct {
 }
 
 type PtDiagMatrixLiteral struct {
-	LogSlots   int                  // Log of the number of slots of the plaintext (needed to compute the appropriate rotation keys)
-	N1         int                  // N1 is the number of inner loops of the baby-step giant-step algo used in the evaluation.
-	Level      int                  // Level is the level at which the matrix is encoded (can be circuit dependant)
-	Scale      float64              // Scale is the scale at which the matrix is encoded (can be circuit dependant)
-	Vec        map[int][2]ring.Poly // Vec is the matrix, in diagonal form, where each entry of vec is an indexed non zero diagonal.
+	LogSlots   int                         // Log of the number of slots of the plaintext (needed to compute the appropriate rotation keys)
+	N1         int                         // N1 is the number of inner loops of the baby-step giant-step algo used in the evaluation.
+	Level      int                         // Level is the level at which the matrix is encoded (can be circuit dependant)
+	Scale      float64                     // Scale is the scale at which the matrix is encoded (can be circuit dependant)
+	Vec        map[int][2]ring.PolyLiteral // Vec is the matrix, in diagonal form, where each entry of vec is an indexed non zero diagonal.
 	naive      bool
 	isGaussian bool // Each diagonal of the matrix is of the form [k, ..., k] for k a gaussian integer
 }
@@ -407,9 +407,9 @@ func GetPtDiagMatrixLiteral(pdm *PtDiagMatrix) (pdml PtDiagMatrixLiteral) {
 	pdml.naive = pdm.naive
 	pdml.isGaussian = pdm.isGaussian
 
-	pdml.Vec = make(map[int][2]ring.Poly)
+	pdml.Vec = make(map[int][2]ring.PolyLiteral)
 	for k, v := range pdm.Vec {
-		pdml.Vec[k] = [2]ring.Poly{*v[0], *v[1]}
+		pdml.Vec[k] = [2]ring.PolyLiteral{ring.GetPolyLiteral(*v[0]), ring.GetPolyLiteral(*v[1])}
 	}
 
 	return

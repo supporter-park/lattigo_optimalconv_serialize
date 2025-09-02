@@ -27,14 +27,15 @@ type SwitchingKey struct {
 }
 
 type SwitchingKeyLiteral struct {
-	Value [][2]ring.Poly
+	Value [][2]ring.PolyLiteral
 }
 
 func NewSwitchingKeyFromLiteral(swkl SwitchingKeyLiteral) (swk *SwitchingKey) {
 	swk = new(SwitchingKey)
 	for _, v := range swkl.Value {
-		v := v
-		swk.Value = append(swk.Value, [2]*ring.Poly{&v[0], &v[1]})
+		v0 := ring.NewPolyFromLiteral(v[0])
+		v1 := ring.NewPolyFromLiteral(v[1])
+		swk.Value = append(swk.Value, [2]*ring.Poly{v0, v1})
 	}
 
 	return
@@ -62,9 +63,9 @@ func GetRotationKeySetLiteral(rtks *RotationKeySet) (rtksl RotationKeySetLiteral
 	rtksl.Keys = make(map[uint64]SwitchingKeyLiteral)
 	for k, v := range rtks.Keys {
 		var tmp SwitchingKeyLiteral
-		tmp.Value = make([][2]ring.Poly, len(v.Value))
+		tmp.Value = make([][2]ring.PolyLiteral, len(v.Value))
 		for jdx := range v.Value {
-			tmp.Value[jdx] = [2]ring.Poly{*(v.Value[jdx][0]), *(v.Value[jdx][1])}
+			tmp.Value[jdx] = [2]ring.PolyLiteral{ring.GetPolyLiteral(*(v.Value[jdx][0])), ring.GetPolyLiteral(*(v.Value[jdx][1]))}
 		}
 		rtksl.Keys[k] = tmp
 	}

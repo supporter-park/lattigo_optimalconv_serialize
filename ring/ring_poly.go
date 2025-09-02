@@ -15,6 +15,25 @@ type Poly struct {
 	IsMForm bool
 }
 
+type PolyLiteral struct {
+	Coeffs  [][]uint64
+	IsNTT   bool
+	IsMForm bool
+}
+
+func GetPolyLiteral(p Poly) (pl PolyLiteral) {
+
+	pl.Coeffs = make([][]uint64, len(p.Coeffs))
+	for idx := range p.Coeffs {
+		pl.Coeffs[idx] = make([]uint64, len(p.Coeffs[idx]))
+		copy(pl.Coeffs[idx], p.Coeffs[idx])
+	}
+	pl.IsNTT = p.IsNTT
+	pl.IsMForm = p.IsMForm
+
+	return
+}
+
 // NewPoly creates a new polynomial with N coefficients set to zero and nbModuli moduli.
 func NewPoly(N, nbModuli int) (pol *Poly) {
 	pol = new(Poly)
@@ -25,7 +44,7 @@ func NewPoly(N, nbModuli int) (pol *Poly) {
 	return
 }
 
-func NewPolyFromLiteral(polylit Poly) (pol *Poly) {
+func NewPolyFromLiteral(polylit PolyLiteral) (pol *Poly) {
 	pol = new(Poly)
 	pol.Coeffs = polylit.Coeffs
 	pol.IsNTT = polylit.IsNTT
