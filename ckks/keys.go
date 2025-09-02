@@ -4,6 +4,7 @@ package ckks
 import (
 	"encoding/gob"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 
@@ -53,12 +54,12 @@ func OnloadRtk(params Parameters, rotations []int, tag string) (rtk *rlwe.Rotati
 	for i, k := range rotations {
 		galEls[i] = params.GaloisElementForColumnRotationBy(k)
 	}
-	galEls = append(galEls, params.GaloisElementForRowRotation())
+	// galEls = append(galEls, params.GaloisElementForRowRotation())
 
 	var swkl rlwe.SwitchingKeyLiteral
 	rtk.Keys = make(map[uint64]*rlwe.SwitchingKey)
 	for _, g := range galEls {
-		rtk.Keys[g] = new(rlwe.SwitchingKey)
+
 		file, err := os.Open("./rtk-" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
 		if err != nil {
 			fmt.Println("File open error:", err, "|", "./rtk-"+tag+"/"+strconv.FormatUint(g, 10)+".gob")
@@ -68,10 +69,14 @@ func OnloadRtk(params Parameters, rotations []int, tag string) (rtk *rlwe.Rotati
 		decoder := gob.NewDecoder(file)
 		err = decoder.Decode(&swkl)
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			fmt.Println("Rtk decoding error:", err)
 			return
 		}
 
+		rtk.Keys[g] = new(rlwe.SwitchingKey)
 		rtk.Keys[g] = rlwe.NewSwitchingKeyFromLiteral(swkl)
 	}
 
