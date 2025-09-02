@@ -89,6 +89,13 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 	}
 
 	rtkl := GetRotationKeySetLiteral(rtk)
+	for k, v := range rtkl.Keys {
+		fmt.Println(k)
+		for idx := range v.Value {
+			fmt.Println(v.Value[idx][0], v.Value[idx][1])
+		}
+	}
+
 	gob.Register(SwitchingKeyLiteral{})
 
 	for k, v := range rtkl.Keys {
