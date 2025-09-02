@@ -91,7 +91,7 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 	rtkl := GetRotationKeySetLiteral(rtk)
 
 	for k, v := range rtkl.Keys {
-		file, err := os.Create("./rtk/" + strconv.FormatUint(k, 10) + ".gob")
+		file, err := os.Create("./rtk-" + tag + "/" + strconv.FormatUint(k, 10) + ".gob")
 		if err != nil {
 			fmt.Println("File creation error:", err)
 			return
