@@ -64,7 +64,7 @@ func GetRotationKeySetLiteral(rtks *RotationKeySet) (rtksl RotationKeySetLiteral
 		var tmp SwitchingKeyLiteral
 		tmp.Value = make([][2]ring.Poly, len(v.Value))
 		for jdx := range v.Value {
-			tmp.Value = append(tmp.Value, [2]ring.Poly{*(v.Value[jdx][0]), *(v.Value[jdx][1])})
+			tmp.Value[jdx] = [2]ring.Poly{*(v.Value[jdx][0]), *(v.Value[jdx][1])}
 		}
 		rtksl.Keys[k] = tmp
 	}
@@ -89,13 +89,6 @@ func OffloadRtk(rtk *RotationKeySet, tag string) {
 	}
 
 	rtkl := GetRotationKeySetLiteral(rtk)
-	for k, v := range rtkl.Keys {
-		fmt.Println(k)
-		for idx := range v.Value {
-			fmt.Println(v.Value[idx][0], v.Value[idx][1])
-		}
-	}
-
 	gob.Register(SwitchingKeyLiteral{})
 
 	for k, v := range rtkl.Keys {
