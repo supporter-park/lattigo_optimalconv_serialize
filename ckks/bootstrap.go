@@ -2,7 +2,9 @@ package ckks
 
 import (
 	"fmt"
+	"log"
 	"math"
+	"os"
 	"time"
 
 	// "github.com/dwkim606/test_lattigo/ring"
@@ -80,6 +82,17 @@ func (btp *Bootstrapper) Bootstrapp(ct *Ciphertext) (ct0 *Ciphertext) {
 
 		// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
 		fmt.Println("After StC    :", time.Since(t))
+	} else {
+		file, err := os.OpenFile(btp.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "Bootstrapp-"+btp.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 
 	return
@@ -178,6 +191,17 @@ func (btp *Bootstrapper) BootstrappConv_CtoS(ct *Ciphertext) (ct0 *Ciphertext, c
 
 		// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
 		//log.Println("After StC    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	} else {
+		file, err := os.OpenFile(btp.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "BootstrappConv_CtoS-"+btp.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 
 	return
@@ -192,6 +216,17 @@ func (btp *Bootstrapper) BootstrappConv_StoC(ct0, ct1 *Ciphertext) *Ciphertext {
 
 		// ct0.Scale = math.Exp2(math.Round(math.Log2(ct0.Scale))) // rounds to the nearest power of two
 		//log.Println("After StC    :", time.Now().Sub(t), ct0.Level(), ct0.Scale())
+	} else {
+		file, err := os.OpenFile(btp.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "BootstrappConv_StoC-"+btp.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 
 	return ct0

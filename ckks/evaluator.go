@@ -3,7 +3,9 @@ package ckks
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
+	"os"
 	"unsafe"
 
 	// "github.com/dwkim606/test_lattigo/ring"
@@ -157,7 +159,9 @@ type evaluator struct {
 	rtks            *rlwe.RotationKeySet
 	permuteNTTIndex map[uint64][]uint64
 
-	isDry bool
+	identifier   string
+	isDry        bool
+	scheduleFile string
 }
 
 type evaluatorBase struct {
@@ -212,7 +216,7 @@ func NewEvaluator(params Parameters, evaluationKey rlwe.EvaluationKey) Evaluator
 	return eval
 }
 
-func NewEvaluator_v8(params Parameters, evaluationKey rlwe.EvaluationKey, isDry bool) Evaluator {
+func NewEvaluator_v8(params Parameters, evaluationKey rlwe.EvaluationKey, id string, isDry bool, scheduleFile string) Evaluator {
 	eval := new(evaluator)
 	eval.evaluatorBase = newEvaluatorBase(params)
 	eval.evaluatorBuffers = newEvaluatorBuffers(eval.evaluatorBase)
@@ -227,7 +231,9 @@ func NewEvaluator_v8(params Parameters, evaluationKey rlwe.EvaluationKey, isDry 
 		eval.KeySwitcher = rlwe.NewKeySwitcher(params.Parameters)
 	}
 
+	eval.identifier = id
 	eval.isDry = isDry
+	eval.scheduleFile = scheduleFile
 
 	return eval
 }
@@ -318,6 +324,17 @@ func (eval *evaluator) Add(op0, op1 Operand, ctOut *Ciphertext) {
 	if !eval.isDry {
 		eval.checkBinary(op0, op1, ctOut, utils.MaxInt(op0.Degree(), op1.Degree()))
 		eval.evaluateInPlace(op0, op1, ctOut, eval.ringQ.AddLvl)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "Add-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -326,24 +343,37 @@ func (eval *evaluator) AddNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 	if !eval.isDry {
 		eval.checkBinary(op0, op1, ctOut, utils.MaxInt(op0.Degree(), op1.Degree()))
 		eval.evaluateInPlace(op0, op1, ctOut, eval.ringQ.AddNoModLvl)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "AddNoMod-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
 // AddNew adds op0 to op1 and returns the result in a newly created element.
 func (eval *evaluator) AddNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
-		ctOut = eval.newCiphertextBinary(op0, op1)
-		eval.Add(op0, op1, ctOut)
+
 	}
+	ctOut = eval.newCiphertextBinary(op0, op1)
+	eval.Add(op0, op1, ctOut)
 	return
 }
 
 // AddNoModNew adds op0 to op1 without modular reduction, and returns the result in a newly created element.
 func (eval *evaluator) AddNoModNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
-		ctOut = eval.newCiphertextBinary(op0, op1)
-		eval.AddNoMod(op0, op1, ctOut)
+
 	}
+	ctOut = eval.newCiphertextBinary(op0, op1)
+	eval.AddNoMod(op0, op1, ctOut)
 	return
 }
 
@@ -379,6 +409,17 @@ func (eval *evaluator) SubNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 				eval.ringQ.NegLvl(level, ctOut.Value[i], ctOut.Value[i])
 			}
 		}
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "SubNoMod-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -387,6 +428,17 @@ func (eval *evaluator) SubNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = eval.newCiphertextBinary(op0, op1)
 		eval.Sub(op0, op1, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "SubNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -394,9 +446,10 @@ func (eval *evaluator) SubNew(op0, op1 Operand) (ctOut *Ciphertext) {
 // SubNoModNew subtracts op1 from op0 without modular reduction, and returns the result in a newly created element.
 func (eval *evaluator) SubNoModNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
-		ctOut = eval.newCiphertextBinary(op0, op1)
-		eval.SubNoMod(op0, op1, ctOut)
+
 	}
+	ctOut = eval.newCiphertextBinary(op0, op1)
+	eval.SubNoMod(op0, op1, ctOut)
 	return
 }
 
@@ -547,6 +600,17 @@ func (eval *evaluator) AddConstNew(ct0 *Ciphertext, constant interface{}) (ctOut
 	if !eval.isDry {
 		ctOut = ct0.CopyNew()
 		eval.AddConst(ct0, constant, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "AddConstNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return ctOut
 }
@@ -1100,6 +1164,17 @@ func (eval *evaluator) MultByiNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, 1, ct0.Level(), ct0.Scale)
 		eval.MultByi(ct0, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "MultByiNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return ctOut
 }
@@ -1174,6 +1249,17 @@ func (eval *evaluator) DivByiNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, 1, ct0.Level(), ct0.Scale)
 		eval.DivByi(ct0, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "DivByiNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -1297,6 +1383,17 @@ func (eval *evaluator) MulByPow2(ct0 *Ciphertext, pow2 int, ctOut *Ciphertext) {
 		for i := range ctOut.Value {
 			eval.ringQ.MulByPow2Lvl(level, ct0.Value[i], pow2, ctOut.Value[i])
 		}
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "MulByPow2-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -1417,6 +1514,17 @@ func (eval *evaluator) MulNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, op0.Degree()+op1.Degree(), utils.MinInt(op0.Level(), op1.Level()), 0)
 		eval.mulRelin(op0, op1, false, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "MulNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -1427,6 +1535,17 @@ func (eval *evaluator) MulNew(op0, op1 Operand) (ctOut *Ciphertext) {
 func (eval *evaluator) Mul(op0, op1 Operand, ctOut *Ciphertext) {
 	if !eval.isDry {
 		eval.mulRelin(op0, op1, false, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "Mul-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -1614,8 +1733,8 @@ func (eval *evaluator) SwitchKeys(ct0 *Ciphertext, switchingKey *rlwe.SwitchingK
 func (eval *evaluator) RotateNew(ct0 *Ciphertext, k int) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
-		eval.Rotate(ct0, k, ctOut)
 	}
+	eval.Rotate(ct0, k, ctOut)
 	return
 }
 
@@ -1637,6 +1756,17 @@ func (eval *evaluator) Rotate(ct0 *Ciphertext, k int, ctOut *Ciphertext) {
 			galEl := eval.params.GaloisElementForColumnRotationBy(k)
 
 			eval.permuteNTT(ct0, galEl, ctOut)
+		}
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "AddConstNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
 		}
 	}
 }

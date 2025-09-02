@@ -111,9 +111,10 @@ type Bootstrapper struct {
 
 	rotKeyIndex []int // a list of the required rotation keys
 
-	identifier string
-	isDry      bool
-	isReady    bool
+	identifier   string
+	isDry        bool
+	isReady      bool
+	scheduleFile string
 }
 
 func (btp *Bootstrapper) GetId() string {
@@ -190,7 +191,7 @@ func NewBootstrapper_benchmark(params Parameters, btpParams *BootstrappingParame
 	return btp, nil
 }
 
-func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string, isDry bool) (btp *Bootstrapper, err error) {
+func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string, isDry bool, scheduleFile string) (btp *Bootstrapper, err error) {
 
 	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
 		return nil, fmt.Errorf("cannot use double angle formul for SinType = Sin -> must use SinType = Cos")
@@ -213,6 +214,7 @@ func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, b
 
 	btp.isDry = isDry
 	btp.isReady = true
+	btp.scheduleFile = scheduleFile
 
 	return btp, nil
 }
