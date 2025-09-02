@@ -59,10 +59,14 @@ func OnloadRtk(params Parameters, rotations []int, tag string) (rtk *rlwe.Rotati
 	rtk.Keys = make(map[uint64]*rlwe.SwitchingKey)
 	for _, g := range galEls {
 		rtk.Keys[g] = new(rlwe.SwitchingKey)
-		file, _ := os.Open("./rtk" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
+		file, err := os.Open("./rtk" + tag + "/" + strconv.FormatUint(g, 10) + ".gob")
+		if err != nil {
+			fmt.Println("File open error:", err, "|", "./rtk-"+tag+"/"+strconv.FormatUint(g, 10)+".gob")
+			return
+		}
 		defer file.Close()
 		decoder := gob.NewDecoder(file)
-		err := decoder.Decode(&swkl)
+		err = decoder.Decode(&swkl)
 		if err != nil {
 			fmt.Println("Rtk decoding error:", err)
 			return
