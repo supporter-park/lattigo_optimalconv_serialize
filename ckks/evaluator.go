@@ -161,6 +161,7 @@ type evaluator struct {
 
 	identifier string
 	isDry      bool
+	isReady    bool
 	orderFile  string
 }
 
@@ -233,6 +234,7 @@ func NewEvaluator_hesync(params Parameters, evaluationKey rlwe.EvaluationKey, id
 
 	eval.identifier = id
 	eval.isDry = false
+	eval.isReady = true
 	eval.orderFile = orderFile
 
 	return eval

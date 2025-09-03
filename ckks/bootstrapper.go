@@ -111,10 +111,10 @@ type Bootstrapper struct {
 
 	rotKeyIndex []int // a list of the required rotation keys
 
-	identifier   string
-	isDry        bool
-	isReady      bool
-	scheduleFile string
+	identifier string
+	isDry      bool
+	isReady    bool
+	orderFile  string
 }
 
 func (btp *Bootstrapper) GetId() string {
@@ -191,7 +191,7 @@ func NewBootstrapper_benchmark(params Parameters, btpParams *BootstrappingParame
 	return btp, nil
 }
 
-func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string, isDry bool, scheduleFile string) (btp *Bootstrapper, err error) {
+func NewBootstrapper_hesync(params Parameters, btpParams *BootstrappingParameters, btpKey BootstrappingKey, id string, orderFile string) (btp *Bootstrapper, err error) {
 
 	if btpParams.SinType == SinType(Sin) && btpParams.SinRescal != 0 {
 		return nil, fmt.Errorf("cannot use double angle formul for SinType = Sin -> must use SinType = Cos")
@@ -212,11 +212,16 @@ func NewBootstrapper_v8(params Parameters, btpParams *BootstrappingParameters, b
 		btp.identifier = "default-btp"
 	}
 
-	btp.isDry = isDry
+	btp.isDry = false
 	btp.isReady = true
-	btp.scheduleFile = scheduleFile
+	btp.orderFile = orderFile
 
 	return btp, nil
+}
+
+func (btp *Bootstrapper) enableDryRun() {
+
+	btp.isDry = true
 }
 
 // newBootstrapper is a constructor of "dummy" bootstrapper to enable the generation of bootstrapping-related constants
