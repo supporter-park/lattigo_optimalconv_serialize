@@ -127,6 +127,11 @@ func (btp *Bootstrapper) ToggleReady() {
 	btp.isReady = !btp.isReady
 }
 
+func (btp *Bootstrapper) enableDryRun() {
+
+	btp.isDry = true
+}
+
 func sin2pi2pi(x complex128) complex128 {
 	return cmplx.Sin(6.283185307179586*x) / 6.283185307179586
 }
@@ -217,11 +222,6 @@ func NewBootstrapper_hesync(params Parameters, btpParams *BootstrappingParameter
 	btp.orderFile = orderFile
 
 	return btp, nil
-}
-
-func (btp *Bootstrapper) enableDryRun() {
-
-	btp.isDry = true
 }
 
 // newBootstrapper is a constructor of "dummy" bootstrapper to enable the generation of bootstrapping-related constants

@@ -146,6 +146,8 @@ type Evaluator interface {
 	// ==============
 	ShallowCopy() Evaluator
 	WithKey(rlwe.EvaluationKey) Evaluator
+
+	enableDryRun()
 }
 
 // evaluator is a struct that holds the necessary elements to execute the homomorphic operations between Ciphertexts and/or Plaintexts.
