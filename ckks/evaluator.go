@@ -159,9 +159,9 @@ type evaluator struct {
 	rtks            *rlwe.RotationKeySet
 	permuteNTTIndex map[uint64][]uint64
 
-	identifier   string
-	isDry        bool
-	scheduleFile string
+	identifier string
+	isDry      bool
+	orderFile  string
 }
 
 type evaluatorBase struct {
@@ -216,7 +216,7 @@ func NewEvaluator(params Parameters, evaluationKey rlwe.EvaluationKey) Evaluator
 	return eval
 }
 
-func NewEvaluator_v8(params Parameters, evaluationKey rlwe.EvaluationKey, id string, isDry bool, scheduleFile string) Evaluator {
+func NewEvaluator_hesync(params Parameters, evaluationKey rlwe.EvaluationKey, id string, orderFile string) Evaluator {
 	eval := new(evaluator)
 	eval.evaluatorBase = newEvaluatorBase(params)
 	eval.evaluatorBuffers = newEvaluatorBuffers(eval.evaluatorBase)
@@ -232,10 +232,15 @@ func NewEvaluator_v8(params Parameters, evaluationKey rlwe.EvaluationKey, id str
 	}
 
 	eval.identifier = id
-	eval.isDry = isDry
-	eval.scheduleFile = scheduleFile
+	eval.isDry = false
+	eval.orderFile = orderFile
 
 	return eval
+}
+
+func (eval *evaluator) enableDryRun() {
+
+	eval.isDry = true
 }
 
 func (eval *evaluator) permuteNTTIndexesForKey(rtks *rlwe.RotationKeySet) *map[uint64][]uint64 {
@@ -1363,6 +1368,17 @@ func (eval *evaluator) SetScale(ct *Ciphertext, scale float64) {
 		ct.Scale = scale
 
 		eval.scale = tmp
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "SetScale-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -1502,6 +1518,17 @@ func (eval *evaluator) Rescale(ctIn *Ciphertext, minScale float64, ctOut *Cipher
 
 		for i := range ctOut.Value {
 			ringQ.DivRoundByLastModulusManyNTT(ctIn.Value[i], ctOut.Value[i], nbRescale)
+		}
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "Rescale-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
 		}
 	}
 
@@ -1732,8 +1759,9 @@ func (eval *evaluator) SwitchKeys(ct0 *Ciphertext, switchingKey *rlwe.SwitchingK
 // If the provided element is a Ciphertext, a key-switching operation is necessary and a rotation key for the specific rotation needs to be provided.
 func (eval *evaluator) RotateNew(ct0 *Ciphertext, k int) (ctOut *Ciphertext) {
 	if !eval.isDry {
-		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
+
 	}
+	ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
 	eval.Rotate(ct0, k, ctOut)
 	return
 }
@@ -1801,6 +1829,17 @@ func (eval *evaluator) ConjugateNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
 		eval.Conjugate(ct0, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		_, err = fmt.Fprintln(file, "ConjugateNew-"+eval.identifier)
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
