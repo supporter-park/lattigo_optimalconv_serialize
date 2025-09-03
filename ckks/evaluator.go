@@ -332,7 +332,7 @@ func (eval *evaluator) Add(op0, op1 Operand, ctOut *Ciphertext) {
 		eval.checkBinary(op0, op1, ctOut, utils.MaxInt(op0.Degree(), op1.Degree()))
 		eval.evaluateInPlace(op0, op1, ctOut, eval.ringQ.AddLvl)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -351,7 +351,7 @@ func (eval *evaluator) AddNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 		eval.checkBinary(op0, op1, ctOut, utils.MaxInt(op0.Degree(), op1.Degree()))
 		eval.evaluateInPlace(op0, op1, ctOut, eval.ringQ.AddNoModLvl)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -417,7 +417,7 @@ func (eval *evaluator) SubNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 			}
 		}
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -436,7 +436,7 @@ func (eval *evaluator) SubNew(op0, op1 Operand) (ctOut *Ciphertext) {
 		ctOut = eval.newCiphertextBinary(op0, op1)
 		eval.Sub(op0, op1, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -608,7 +608,7 @@ func (eval *evaluator) AddConstNew(ct0 *Ciphertext, constant interface{}) (ctOut
 		ctOut = ct0.CopyNew()
 		eval.AddConst(ct0, constant, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1172,7 +1172,7 @@ func (eval *evaluator) MultByiNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 		ctOut = NewCiphertext(eval.params, 1, ct0.Level(), ct0.Scale)
 		eval.MultByi(ct0, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1257,7 +1257,7 @@ func (eval *evaluator) DivByiNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 		ctOut = NewCiphertext(eval.params, 1, ct0.Level(), ct0.Scale)
 		eval.DivByi(ct0, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1371,7 +1371,7 @@ func (eval *evaluator) SetScale(ct *Ciphertext, scale float64) {
 
 		eval.scale = tmp
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1402,7 +1402,7 @@ func (eval *evaluator) MulByPow2(ct0 *Ciphertext, pow2 int, ctOut *Ciphertext) {
 			eval.ringQ.MulByPow2Lvl(level, ct0.Value[i], pow2, ctOut.Value[i])
 		}
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1522,7 +1522,7 @@ func (eval *evaluator) Rescale(ctIn *Ciphertext, minScale float64, ctOut *Cipher
 			ringQ.DivRoundByLastModulusManyNTT(ctIn.Value[i], ctOut.Value[i], nbRescale)
 		}
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1544,7 +1544,7 @@ func (eval *evaluator) MulNew(op0, op1 Operand) (ctOut *Ciphertext) {
 		ctOut = NewCiphertext(eval.params, op0.Degree()+op1.Degree(), utils.MinInt(op0.Level(), op1.Level()), 0)
 		eval.mulRelin(op0, op1, false, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1565,7 +1565,7 @@ func (eval *evaluator) Mul(op0, op1 Operand, ctOut *Ciphertext) {
 	if !eval.isDry {
 		eval.mulRelin(op0, op1, false, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1788,7 +1788,7 @@ func (eval *evaluator) Rotate(ct0 *Ciphertext, k int, ctOut *Ciphertext) {
 			eval.permuteNTT(ct0, galEl, ctOut)
 		}
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
@@ -1832,7 +1832,7 @@ func (eval *evaluator) ConjugateNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
 		eval.Conjugate(ct0, ctOut)
 	} else {
-		file, err := os.OpenFile(eval.scheduleFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("Fail to open file: %s", err)
 		}
