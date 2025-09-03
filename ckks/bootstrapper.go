@@ -127,7 +127,7 @@ func (btp *Bootstrapper) ToggleReady() {
 	btp.isReady = !btp.isReady
 }
 
-func (btp *Bootstrapper) enableDryRun() {
+func (btp *Bootstrapper) EnableDryRun() {
 
 	btp.isDry = true
 }
