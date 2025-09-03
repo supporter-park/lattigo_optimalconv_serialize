@@ -147,7 +147,7 @@ type Evaluator interface {
 	ShallowCopy() Evaluator
 	WithKey(rlwe.EvaluationKey) Evaluator
 
-	enableDryRun()
+	EnableDryRun()
 }
 
 // evaluator is a struct that holds the necessary elements to execute the homomorphic operations between Ciphertexts and/or Plaintexts.
@@ -242,7 +242,7 @@ func NewEvaluator_hesync(params Parameters, evaluationKey rlwe.EvaluationKey, id
 	return eval
 }
 
-func (eval *evaluator) enableDryRun() {
+func (eval *evaluator) EnableDryRun() {
 
 	eval.isDry = true
 }
