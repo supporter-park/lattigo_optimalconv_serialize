@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"runtime"
+	"strconv"
 	"unsafe"
 
 	// "github.com/dwkim606/test_lattigo/ring"
@@ -378,11 +379,21 @@ func (eval *evaluator) Add(op0, op1 Operand, ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "Add-"+eval.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Add, "+strconv.Itoa(HigherLv(op0, op1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
 	}
+
+	op0.Level()
 }
 
 // AddNoMod adds op0 to op1 and returns the result in ctOut, without modular reduction.
@@ -397,7 +408,15 @@ func (eval *evaluator) AddNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "AddNoMod-"+eval.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", AddNoMod, "+strconv.Itoa(HigherLv(op0, op1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -407,20 +426,58 @@ func (eval *evaluator) AddNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 // AddNew adds op0 to op1 and returns the result in a newly created element.
 func (eval *evaluator) AddNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
+		ctOut = eval.newCiphertextBinary(op0, op1)
+		eval.Add(op0, op1, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
 
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", AddNew, "+strconv.Itoa(HigherLv(op0, op1)))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
-	ctOut = eval.newCiphertextBinary(op0, op1)
-	eval.Add(op0, op1, ctOut)
+
 	return
 }
 
 // AddNoModNew adds op0 to op1 without modular reduction, and returns the result in a newly created element.
 func (eval *evaluator) AddNoModNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
+		ctOut = eval.newCiphertextBinary(op0, op1)
+		eval.AddNoMod(op0, op1, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
 
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", AddNoModNew, "+strconv.Itoa(HigherLv(op0, op1)))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
-	ctOut = eval.newCiphertextBinary(op0, op1)
-	eval.AddNoMod(op0, op1, ctOut)
+
 	return
 }
 
@@ -438,6 +495,25 @@ func (eval *evaluator) Sub(op0, op1 Operand, ctOut *Ciphertext) {
 			for i := op0.Degree() + 1; i < op1.Degree()+1; i++ {
 				eval.ringQ.NegLvl(level, ctOut.Value[i], ctOut.Value[i])
 			}
+		}
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Sub, "+strconv.Itoa(HigherLv(op0, op1)))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
 		}
 	}
 }
@@ -463,7 +539,15 @@ func (eval *evaluator) SubNoMod(op0, op1 Operand, ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "SubNoMod-"+eval.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", SubNoMod, "+strconv.Itoa(HigherLv(op0, op1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -482,7 +566,15 @@ func (eval *evaluator) SubNew(op0, op1 Operand) (ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "SubNew-"+eval.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", SubNew, "+strconv.Itoa(HigherLv(op0, op1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -493,10 +585,29 @@ func (eval *evaluator) SubNew(op0, op1 Operand) (ctOut *Ciphertext) {
 // SubNoModNew subtracts op1 from op0 without modular reduction, and returns the result in a newly created element.
 func (eval *evaluator) SubNoModNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
+		ctOut = eval.newCiphertextBinary(op0, op1)
+		eval.SubNoMod(op0, op1, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
 
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", SubNoModNew, "+strconv.Itoa(HigherLv(op0, op1)))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
-	ctOut = eval.newCiphertextBinary(op0, op1)
-	eval.SubNoMod(op0, op1, ctOut)
+
 	return
 }
 
@@ -630,6 +741,25 @@ func (eval *evaluator) Neg(ct0 *Ciphertext, ctOut *Ciphertext) {
 		}
 
 		ctOut.Scale = ct0.Scale
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Neg, "+strconv.Itoa(ct0.Level()))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -638,6 +768,25 @@ func (eval *evaluator) NegNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
 		eval.Neg(ct0, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", NegNew, "+strconv.Itoa(ct0.Level()))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -654,7 +803,15 @@ func (eval *evaluator) AddConstNew(ct0 *Ciphertext, constant interface{}) (ctOut
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "AddConstNew-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", AddConstNew, "+strconv.Itoa(ct0.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -937,6 +1094,25 @@ func (eval *evaluator) MultByConstNew(ct0 *Ciphertext, constant interface{}) (ct
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
 		eval.MultByConst(ct0, constant, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MultByConstNew, "+strconv.Itoa(ct0.Level()))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -1218,7 +1394,15 @@ func (eval *evaluator) MultByiNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "MultByiNew-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MultByiNew, "+strconv.Itoa(ct0.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1287,6 +1471,25 @@ func (eval *evaluator) MultByi(ct0 *Ciphertext, ctOut *Ciphertext) {
 				}
 			}
 		}
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MultByi, "+strconv.Itoa(ct0.Level()))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -1303,7 +1506,15 @@ func (eval *evaluator) DivByiNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "DivByiNew-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", DivByiNew, "+strconv.Itoa(ct0.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1417,7 +1628,15 @@ func (eval *evaluator) SetScale(ct *Ciphertext, scale float64) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "SetScale-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", SetScale, "+strconv.Itoa(ct.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1429,6 +1648,25 @@ func (eval *evaluator) MulByPow2New(ct0 *Ciphertext, pow2 int) (ctOut *Ciphertex
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, ct0.Degree(), ct0.Level(), ct0.Scale)
 		eval.MulByPow2(ct0, pow2, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MulByPow2New, "+strconv.Itoa(ct0.Level()))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -1448,7 +1686,15 @@ func (eval *evaluator) MulByPow2(ct0 *Ciphertext, pow2 int, ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "MulByPow2-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MulByPow2, "+strconv.Itoa(ct0.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1568,7 +1814,15 @@ func (eval *evaluator) Rescale(ctIn *Ciphertext, minScale float64, ctOut *Cipher
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "Rescale-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Rescale, "+strconv.Itoa(ctIn.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1590,7 +1844,15 @@ func (eval *evaluator) MulNew(op0, op1 Operand) (ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "MulNew-"+eval.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MulNew, "+strconv.Itoa(HigherLv(op0, op1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1611,7 +1873,15 @@ func (eval *evaluator) Mul(op0, op1 Operand, ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "Mul-"+eval.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Mul, "+strconv.Itoa(HigherLv(op0, op1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1625,6 +1895,25 @@ func (eval *evaluator) MulRelinNew(op0, op1 Operand) (ctOut *Ciphertext) {
 	if !eval.isDry {
 		ctOut = NewCiphertext(eval.params, 1, utils.MinInt(op0.Level(), op1.Level()), 0)
 		eval.mulRelin(op0, op1, true, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MulRelinNew, "+strconv.Itoa(HigherLv(op0, op1)))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 	return
 }
@@ -1636,6 +1925,25 @@ func (eval *evaluator) MulRelinNew(op0, op1 Operand) (ctOut *Ciphertext) {
 func (eval *evaluator) MulRelin(op0, op1 Operand, ctOut *Ciphertext) {
 	if !eval.isDry {
 		eval.mulRelin(op0, op1, true, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, eval.identifier+", MulRelin, "+strconv.Itoa(HigherLv(op0, op1)))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
@@ -1834,7 +2142,15 @@ func (eval *evaluator) Rotate(ct0 *Ciphertext, k int, ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "AddConstNew-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Rotate, "+strconv.Itoa(ct0.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1878,7 +2194,15 @@ func (eval *evaluator) ConjugateNew(ct0 *Ciphertext) (ctOut *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "ConjugateNew-"+eval.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", ConjugateNew, "+strconv.Itoa(ct0.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -1894,6 +2218,25 @@ func (eval *evaluator) Conjugate(ct0 *Ciphertext, ctOut *Ciphertext) {
 		galEl := eval.params.GaloisElementForRowRotation()
 		ctOut.Scale = ct0.Scale
 		eval.permuteNTT(ct0, galEl, ctOut)
+	} else {
+		file, err := os.OpenFile(eval.orderFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Fail to open file: %s", err)
+		}
+		defer file.Close()
+
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, eval.identifier+", Conjugate, "+strconv.Itoa(ct0.Level()))
+		if err != nil {
+			log.Fatalf("Fail to write file: %s", err)
+		}
 	}
 }
 
