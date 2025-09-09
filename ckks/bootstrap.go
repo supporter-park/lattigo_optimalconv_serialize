@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strconv"
 	"time"
 
 	// "github.com/dwkim606/test_lattigo/ring"
@@ -89,7 +90,15 @@ func (btp *Bootstrapper) Bootstrapp(ct *Ciphertext) (ct0 *Ciphertext) {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "Bootstrapp-"+btp.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, btp.identifier+", Bootstrapp, "+strconv.Itoa(ct.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -198,7 +207,15 @@ func (btp *Bootstrapper) BootstrappConv_CtoS(ct *Ciphertext) (ct0 *Ciphertext, c
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "BootstrappConv_CtoS-"+btp.identifier)
+		// HigherLv := func(op0, op1 Operand) int {
+		// 	if op0.Level() > op1.Level() {
+		// 		return op0.Level()
+		// 	} else {
+		// 		return op1.Level()
+		// 	}
+		// }
+
+		_, err = fmt.Fprintln(file, btp.identifier+", BootstrappConv_CtoS, "+strconv.Itoa(ct.Level()))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
@@ -223,7 +240,15 @@ func (btp *Bootstrapper) BootstrappConv_StoC(ct0, ct1 *Ciphertext) *Ciphertext {
 		}
 		defer file.Close()
 
-		_, err = fmt.Fprintln(file, "BootstrappConv_StoC-"+btp.identifier)
+		HigherLv := func(op0, op1 Operand) int {
+			if op0.Level() > op1.Level() {
+				return op0.Level()
+			} else {
+				return op1.Level()
+			}
+		}
+
+		_, err = fmt.Fprintln(file, btp.identifier+", BootstrappConv_StoC, "+strconv.Itoa(HigherLv(ct0, ct1)))
 		if err != nil {
 			log.Fatalf("Fail to write file: %s", err)
 		}
