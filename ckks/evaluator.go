@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"runtime"
 	"unsafe"
 
 	// "github.com/dwkim606/test_lattigo/ring"
@@ -165,6 +166,9 @@ type evaluator struct {
 	isDry      bool
 	isReady    bool
 	orderFile  string
+
+	loadedKeyIdxs []uint64
+	keyQueue      []*rlwe.RotationKeySet
 }
 
 type evaluatorBase struct {
@@ -239,12 +243,46 @@ func NewEvaluator_hesync(params Parameters, evaluationKey rlwe.EvaluationKey, id
 	eval.isReady = true
 	eval.orderFile = orderFile
 
+	eval.keyQueue = make([]*rlwe.RotationKeySet, 0)
+
 	return eval
 }
 
 func (eval *evaluator) EnableDryRun() {
 
 	eval.isDry = true
+}
+
+func (eval *evaluator) LoadKeyOnQueue(params Parameters, rotations []int) {
+
+	tmpkeyptr := new(rlwe.RotationKeySet)
+	eval.keyQueue = append(eval.keyQueue, tmpkeyptr)
+	eval.keyQueue[len(eval.keyQueue)-1] = OnloadRtk(params, rotations, eval.identifier)
+}
+
+func (eval *evaluator) LoadKeyOnEvaluator() {
+
+	for len(eval.keyQueue) < 1 {
+	}
+	for k, v := range eval.keyQueue[0].Keys {
+		eval.rtks.Keys[k] = new(rlwe.SwitchingKey)
+		eval.rtks.Keys[k] = v
+		eval.loadedKeyIdxs = append(eval.loadedKeyIdxs, k)
+	}
+	eval.isReady = true
+
+	eval.keyQueue = eval.keyQueue[1:]
+	runtime.GC()
+}
+
+func (eval *evaluator) PurgeRotationKey() {
+
+	for idx := range eval.loadedKeyIdxs {
+		eval.rtks.Keys[eval.loadedKeyIdxs[idx]] = nil
+	}
+	eval.loadedKeyIdxs = []uint64{}
+	eval.isReady = false
+	runtime.GC()
 }
 
 func (eval *evaluator) permuteNTTIndexesForKey(rtks *rlwe.RotationKeySet) *map[uint64][]uint64 {

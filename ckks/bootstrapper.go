@@ -83,6 +83,14 @@ func (btp *Bootstrapper) OnloadBTP() {
 	btp.isReady = true
 }
 
+func (btp *Bootstrapper) PurgeBTP() {
+
+	btp.pDFT = nil
+	btp.pDFTInv = nil
+	btp.isReady = false
+	runtime.GC()
+}
+
 // Bootstrapper is a struct to stores a memory pool the plaintext matrices
 // the polynomial approximation and the keys for the bootstrapping.
 type Bootstrapper struct {
