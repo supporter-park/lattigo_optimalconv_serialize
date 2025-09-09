@@ -150,6 +150,7 @@ type Evaluator interface {
 	WithKey(rlwe.EvaluationKey) Evaluator
 
 	EnableDryRun()
+	GetId() string
 }
 
 // evaluator is a struct that holds the necessary elements to execute the homomorphic operations between Ciphertexts and/or Plaintexts.
@@ -252,6 +253,11 @@ func NewEvaluator_hesync(params Parameters, evaluationKey rlwe.EvaluationKey, id
 func (eval *evaluator) EnableDryRun() {
 
 	eval.isDry = true
+}
+
+func (eval *evaluator) GetId() string {
+
+	return eval.identifier
 }
 
 func (eval *evaluator) LoadKeyOnQueue(params Parameters, rotations []int) {
